@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#05010d">
+    <title>VEXO | Support & Rewards</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* --- VEXO DESIGN SYSTEM --- */
+        :root {
+            --bg-void: #05010d;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-high: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 100, 255, 0.1);
+            --neon-pink: #ff2a6d;
+            --neon-purple: #7f5af0;
+            --accent-grad: linear-gradient(135deg, #ff2a6d, #7f5af0);
+            --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-void);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* NOISE TEXTURE */
+        .noise {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* --- LOADER --- */
+        #flashLoader {
+            position: fixed; inset: 0; background: #020005; z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.6s var(--ease-smooth), visibility 0.6s;
+        }
+        .logo-svg { width: 100px; height: 100px; overflow: visible; }
+        .logo-path {
+            fill: none; stroke: url(#grad1); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round;
+            stroke-dasharray: 300; stroke-dashoffset: 300; animation: drawLogo 1s var(--spring-bounce) forwards;
+        }
+        @keyframes drawLogo { to { stroke-dashoffset: 0; } }
+
+        /* --- NAV --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 80px; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 4vw; background: rgba(5, 1, 13, 0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .brand { 
+            font-weight: 900; font-size: 1.8rem; letter-spacing: -1px; 
+            display: flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none;
+            background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .nav-back {
+            background: var(--glass); border: 1px solid var(--glass-border); color: #ccc;
+            padding: 8px 20px; border-radius: 30px; font-size: 0.9rem; font-weight: 600;
+            text-decoration: none; transition: 0.3s var(--spring-bounce); display: flex; align-items: center; gap: 8px;
+        }
+        .nav-back:hover { background: var(--glass-high); border-color: var(--neon-purple); color: white; transform: scale(1.05); }
+
+        /* --- CONTAINER --- */
+        .container {
+            position: relative; z-index: 10; max-width: 800px; margin: 120px auto 50px; padding: 0 20px;
+        }
+
+        /* --- PROFILE --- */
+        .profile { text-align: center; margin-bottom: 50px; animation: slideUp 0.8s var(--spring-bounce); }
+        .avatar {
+            width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+            border: 3px solid transparent; background-image: linear-gradient(white, white), var(--accent-grad);
+            background-origin: border-box; background-clip: content-box, border-box;
+            box-shadow: 0 0 30px rgba(127, 90, 240, 0.3); margin-bottom: 15px;
+        }
+        .name { font-size: 2rem; font-weight: 800; margin: 0; letter-spacing: -1px; }
+        .bio { color: #888; font-size: 0.95rem; margin-top: 5px; font-weight: 500; }
+        .bio span { color: var(--neon-pink); }
+
+        /* --- SECTION HEADERS --- */
+        .section-title {
+            font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; color: var(--neon-purple);
+            font-weight: 700; margin: 50px 0 20px; display: flex; align-items: center; gap: 15px;
+            opacity: 0; animation: fadeSlideUp 0.6s var(--ease-smooth) forwards;
+        }
+        .section-title::after { content: ''; height: 1px; background: linear-gradient(90deg, var(--glass-border), transparent); flex: 1; }
+
+        /* --- LINK CARDS --- */
+        .grid { display: grid; gap: 15px; }
+        
+        .card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 16px; padding: 20px; position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.3s var(--spring-bounce); cursor: pointer; text-decoration: none;
+            opacity: 0; animation: fadeSlideUp 0.6s var(--ease-smooth) forwards;
+        }
+        .card:hover {
+            background: rgba(255,255,255,0.06); border-color: var(--neon-pink);
+            transform: scale(1.02) translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        /* The Flash Effect for High Value Cards */
+        .card.high-value {
+            border-color: rgba(255, 42, 109, 0.5);
+            box-shadow: 0 0 15px rgba(255, 42, 109, 0.1);
+            animation: gentlePulse 3s infinite;
+        }
+        @keyframes gentlePulse {
+            0% { box-shadow: 0 0 15px rgba(255, 42, 109, 0.1); }
+            50% { box-shadow: 0 0 25px rgba(255, 42, 109, 0.3); border-color: var(--neon-pink); }
+            100% { box-shadow: 0 0 15px rgba(255, 42, 109, 0.1); }
+        }
+
+        .card-content { flex: 1; min-width: 0; padding-right: 15px; }
+        .card-tag { font-size: 0.65rem; background: rgba(127, 90, 240, 0.2); padding: 3px 8px; border-radius: 4px; color: #ccc; display: inline-block; margin-bottom: 6px; }
+        .card-title { font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 4px; }
+        .card-desc { font-size: 0.85rem; color: #888; line-height: 1.4; }
+        
+        .card-action {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+        }
+        .code-box {
+            background: #000; border: 1px solid #333; padding: 6px 10px; border-radius: 6px;
+            font-family: monospace; font-size: 0.85rem; color: var(--neon-pink); letter-spacing: 1px;
+            display: flex; align-items: center; gap: 6px; transition: 0.2s; white-space: nowrap;
+        }
+        .code-box:hover { border-color: var(--neon-pink); background: rgba(255, 42, 109, 0.1); }
+        .btn-go {
+            width: 36px; height: 36px; border-radius: 50%; background: var(--accent-grad);
+            display: grid; place-items: center; color: white; font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(127, 90, 240, 0.4);
+        }
+
+        /* Hero Support Card Special Style */
+        .card.hero-support {
+            background: linear-gradient(135deg, rgba(255, 42, 109, 0.15), rgba(0,0,0,0));
+            border-color: var(--neon-pink);
+        }
+        .card.hero-support .card-title { color: var(--neon-pink); }
+
+        /* Animation Delays */
+        .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } 
+        .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; }
+
+        /* Copy Toast */
+        #toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: var(--neon-pink); color: white; padding: 12px 24px; border-radius: 50px;
+            font-weight: 600; box-shadow: 0 10px 30px rgba(255, 42, 109, 0.4); z-index: 1000;
+            transition: transform 0.4s var(--spring-bounce); display: flex; align-items: center; gap: 8px;
+        }
+        #toast.visible { transform: translateX(-50%) translateY(0); }
+
+        /* Footer */
+        footer { text-align: center; padding: 40px 0; color: #555; font-size: 0.8rem; margin-top: 40px; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+    
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true">
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#ff2a6d;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7f5af0;stop-opacity:1" />
+        </linearGradient>
+    </svg>
+</head>
+<body>
+
+    <div id="flashLoader">
+        <svg class="logo-svg" viewBox="0 0 100 100"><path class="logo-path" d="M20,20 L50,80 L80,20" /></svg>
+    </div>
+
+    <div class="noise"></div>
+
+    <nav>
+        <a href="index.html" class="brand">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="url(#grad1)"><path d="M4 4l8 16 8-16H4z"/></svg> VEXO
+        </a>
+        <a href="index.html" class="nav-back"><i class="fas fa-arrow-left"></i> Home</a>
+    </nav>
+
+    <div class="container">
+        
+        <div class="profile">
+            <img src="https://ui-avatars.com/api/?name=Hiten&background=0f0f12&color=ff2a6d&size=200&bold=true" alt="Hiten" class="avatar">
+            <h1 class="name">Hiten Bhadra</h1>
+            <p class="bio">Python Dev <span>//</span> Investor <span>//</span> Moto Vlogger</p>
+        </div>
+
+        <div class="section-title delay-1">Support The Mission</div>
+        <div class="grid delay-1">
+            <a href="https://razorpay.me/@hitenbhadra" target="_blank" class="card hero-support">
+                <div class="card-content">
+                    <span class="card-tag">SERVER FUND</span>
+                    <div class="card-title">Keep VEXO Alive</div>
+                    <div class="card-desc">VEXO is free for you, but not for me. Consider buying me a coffee to keep the servers running.</div>
+                </div>
+                <div class="card-action">
+                    <div class="btn-go"><i class="fas fa-heart"></i></div>
+                </div>
+            </a>
+        </div>
+
+        <div class="section-title delay-2">Banking & Rewards</div>
+        <div class="grid delay-2">
+            
+            <a href="https://i.airtel.in/refandearnK0X0TCCKYC" target="_blank" class="card high-value">
+                <div class="card-content">
+                    <span class="card-tag" style="color:#e40000">AIRTEL BANK</span>
+                    <div class="card-title">Claim Your ₹100</div>
+                    <div class="card-desc">Safest secondary account. Don't miss this instant cashback.</div>
+                </div>
+                <div class="card-action"><div class="btn-go"><i class="fas fa-arrow-right"></i></div></div>
+            </a>
+
+            <div class="card" onclick="handleCardClick('https://t.sliceit.com/s?c=A4QgA2g&ic=HITEN88802', 'HITEN88802')">
+                <div class="card-content">
+                    <span class="card-tag" style="color:#8e44ad">SLICE</span>
+                    <div class="card-title">Daily Interest Account</div>
+                    <div class="card-desc">Earn money on your UPI balance every single day.</div>
+                </div>
+                <div class="card-action">
+                    <div class="code-box">HITEN88802 <i class="far fa-copy"></i></div>
+                </div>
+            </div>
+
+            <div class="card" onclick="handleCardClick('https://r.navi.com/FrPCJB', '')">
+                <div class="card-content">
+                    <span class="card-tag" style="color:#e84393">NAVI UPI</span>
+                    <div class="card-title">Claim Cash Reward</div>
+                    <div class="card-desc">Get up to ₹10 back immediately on your first payment.</div>
+                </div>
+                <div class="card-action"><div class="btn-go"><i class="fas fa-gift"></i></div></div>
+            </div>
+
+        </div>
+
+        <div class="section-title delay-3">Invest Like a Pro</div>
+        <div class="grid delay-3">
+            
+            <a href="https://kneo.onelink.me/MRGO/ckuj7pi5?s=rne_profile" target="_blank" class="card high-value">
+                <div class="card-content">
+                    <span class="card-tag" style="color:#ed1c24">KOTAK NEO</span>
+                    <div class="card-title">Trade for Free</div>
+                    <div class="card-desc">Switch to **Zero Brokerage**. Stop paying fees on your trades.</div>
+                </div>
+                <div class="card-action"><div class="btn-go"><i class="fas fa-arrow-right"></i></div></div>
+            </a>
+
+            <div class="card" onclick="handleCardClick('https://join.dhan.co/?invite=GXZIE31297', 'GXZIE31297')">
+                <div class="card-content">
+                    <span class="card-tag" style="color:#7E30E1">DHAN</span>
+                    <div class="card-title">Super Trader App</div>
+                    <div class="card-desc">The only app I trust for high-speed execution.</div>
+                </div>
+                <div class="card-action">
+                    <div class="code-box">GXZIE31297 <i class="far fa-copy"></i></div>
+                </div>
+            </div>
+
+            <div class="card" onclick="handleCardClick('https://app.groww.in/v3cO/xwbm3mh0', 'LCAHT3')">
+                <div class="card-content">
+                    <span class="card-tag" style="color:#00d09c">GROWW</span>
+                    <div class="card-title">Start Investing</div>
+                    <div class="card-desc">Easiest way to open a Free Demat account today.</div>
+                </div>
+                <div class="card-action">
+                    <div class="code-box">LCAHT3 <i class="far fa-copy"></i></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section-title delay-4">Ride & Hustle</div>
+        <div class="grid delay-4">
+            
+            <div class="card" onclick="handleCardClick('https://m.rapido.cc/KKhL/4rlh1kz1', 'R3G634P')">
+                <div class="card-content">
+                    <span class="card-tag" style="color:#F7C948">RAPIDO CAPTAIN</span>
+                    <div class="card-title">Turn Miles into Money</div>
+                    <div class="card-desc">Use my code to unlock the **New Captain Bonus**.</div>
+                </div>
+                <div class="card-action">
+                    <div class="code-box">R3G634P <i class="far fa-copy"></i></div>
+                </div>
+            </div>
+
+            <div class="card" onclick="handleCardClick('https://t.uber.com/referral/?invite_code=6627dw2nxh', '6627dw2nxh')">
+                <div class="card-content">
+                    <span class="card-tag" style="color:#ffffff">UBER</span>
+                    <div class="card-title">Drive with Uber</div>
+                    <div class="card-desc">Sign up bonus for new drivers waiting for you.</div>
+                </div>
+                <div class="card-action">
+                    <div class="code-box">6627dw2nxh <i class="far fa-copy"></i></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2025 Hiten Bhadra. Engineered for VEXO.
+    </footer>
+
+    <div id="toast"><i class="fas fa-check-circle"></i> Code Copied! Opening App...</div>
+
+    <script>
+        // Init Loader
+        window.onload = () => {
+            setTimeout(() => document.getElementById('flashLoader').style.opacity = '0', 500);
+            setTimeout(() => document.getElementById('flashLoader').style.visibility = 'hidden', 1100);
+        };
+
+        // Click Handler
+        function handleCardClick(url, code) {
+            if (code) {
+                navigator.clipboard.writeText(code).then(() => {
+                    showToast();
+                    setTimeout(() => {
+                        window.open(url, '_blank');
+                    }, 1500); // Wait for toast read
+                });
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 2500);
+        }
+    </script>
+
+</body>
+</html>
