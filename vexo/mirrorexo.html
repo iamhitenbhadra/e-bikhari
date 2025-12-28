@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS 26 Ultimate Camera</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --app-bg: #000000;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-blur: blur(50px);
+            --accent-yellow: #ffd60a;
+            --accent-red: #ff3b30;
+            --accent-cyan: #30d158;
+            --text-primary: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; user-select: none; }
+
+        body {
+            background-color: var(--app-bg);
+            color: var(--text-primary);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Viewfinder --- */
+        #viewfinder-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 32px 32px;
+            background: #111;
+        }
+
+        video#camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        /* --- Flash Overlays --- */
+        .flash-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 50;
+        }
+
+        #flash-fill { background: white; }
+        
+        #flash-edge {
+            box-shadow: inset 0 0 100px 30px var(--accent-yellow), inset 0 0 40px 10px cyan;
+            mix-blend-mode: screen;
+        }
+
+        /* Animations */
+        .anim-flash-fill { animation: flashBurst 0.25s ease-out forwards; }
+        .anim-flash-edge { animation: edgePulse 0.5s ease-out forwards; }
+
+        @keyframes flashBurst { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes edgePulse { 0% { opacity: 0; transform: scale(1); } 50% { opacity: 1; transform: scale(1.02); } 100% { opacity: 0; transform: scale(1); } }
+
+        /* --- Filter Styles --- */
+        .filter-bw { filter: grayscale(100%) contrast(1.2); }
+        .filter-vivid { filter: saturate(1.5) contrast(1.1); }
+        .filter-cyber { filter: hue-rotate(-30deg) contrast(1.2) saturate(1.2); }
+
+        /* --- Top Controls --- */
+        .top-island {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .glass-pill {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            height: 48px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #fff;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        .icon-btn:active { transform: scale(0.85); background: rgba(255,255,255,0.2); }
+        
+        /* Flash State Styles */
+        .flash-active-fill { color: var(--accent-yellow); text-shadow: 0 0 10px var(--accent-yellow); }
+        .flash-active-edge { color: var(--accent-cyan); text-shadow: 0 0 10px var(--accent-cyan); }
+
+        /* --- Status Toast --- */
+        #status-toast {
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 90;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- Bottom Deck --- */
+        #bottom-deck {
+            height: 160px;
+            background: var(--app-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 40px;
+            z-index: 100;
+        }
+
+        .mode-row {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .mode-item { color: rgba(255,255,255,0.4); cursor: pointer; transition: 0.3s; }
+        .mode-active { color: var(--accent-yellow); text-shadow: 0 0 15px rgba(255, 214, 10, 0.5); }
+        
+        body.video-mode .mode-active { color: var(--accent-red); text-shadow: none; }
+
+        .control-row {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+
+        .gallery-thumb {
+            width: 54px;
+            height: 54px;
+            background: #222;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.15);
+        }
+        .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        #shutter-ring {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            border: 4px solid white;
+            padding: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        #shutter-core {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Shutter Interactions */
+        #shutter-ring:active { transform: scale(0.95); }
+        body.video-mode #shutter-core { background: var(--accent-red); }
+        body.recording #shutter-core { transform: scale(0.5); border-radius: 6px; }
+
+        .flip-btn {
+            width: 54px;
+            height: 54px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="photo-mode">
+
+    <div id="viewfinder-container">
+        <video id="camera-feed" autoplay playsinline muted></video>
+        
+        <div id="flash-fill" class="flash-overlay"></div>
+        <div id="flash-edge" class="flash-overlay"></div>
+        
+        <div id="status-toast">Flash: Off</div>
+
+        <div class="top-island">
+            <div class="glass-pill">
+                <div class="icon-btn" id="btn-flash" onclick="cycleFlash()">
+                    <i class="fa-solid fa-bolt-slash"></i>
+                </div>
+                <div class="icon-btn" onclick="cycleFilter()">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div class="icon-btn" onclick="showToast('Settings Locked')">
+                    <i class="fa-solid fa-sliders"></i>
+                </div>
+            </div>
+            
+            <div class="glass-pill">
+                <div class="icon-btn" onclick="setZoom(1)">1x</div>
+                <div class="icon-btn" onclick="setZoom(2)">2</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bottom-deck">
+        <div class="mode-row">
+            <div class="mode-item" id="m-video" onclick="setMode('video')">Video</div>
+            <div class="mode-item mode-active" id="m-photo" onclick="setMode('photo')">Photo</div>
+            <div class="mode-item" onclick="setMode('portrait')">Portrait</div>
+        </div>
+
+        <div class="control-row">
+            <div class="gallery-thumb">
+                <img id="last-thumb" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+            </div>
+
+            <div id="shutter-ring">
+                <div id="shutter-core"></div>
+            </div>
+
+            <div class="flip-btn" onclick="flipCam()">
+                <i class="fa-solid fa-rotate"></i>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let stream = null;
+        let facing = 'user';
+        let mode = 'photo';
+        let isRecording = false;
+        let mediaRecorder;
+        let chunks = [];
+        
+        // Flash: 0=Off, 1=Fill (Standard), 2=Edge (Neon)
+        let flashState = 0; 
+        
+        // Filters: 0=None, 1=B&W, 2=Vivid, 3=Cyber
+        let filterState = 0;
+        const filters = ['', 'filter-bw', 'filter-vivid', 'filter-cyber'];
+        const filterNames = ['Normal', 'Mono', 'Vivid', 'Cyber'];
+
+        // Elements
+        const video = document.getElementById('camera-feed');
+        const flashFill = document.getElementById('flash-fill');
+        const flashEdge = document.getElementById('flash-edge');
+        const toast = document.getElementById('status-toast');
+        const thumb = document.getElementById('last-thumb');
+        const btnFlash = document.getElementById('btn-flash');
+
+        // Init
+        async function startCam() {
+            if(stream) stream.getTracks().forEach(t => t.stop());
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                    audio: true
+                });
+                video.srcObject = stream;
+            } catch(e) { console.error(e); }
+        }
+
+        // Logic
+        function flipCam() {
+            facing = facing === 'user' ? 'environment' : 'user';
+            video.style.transform = facing === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+            startCam();
+        }
+
+        function setMode(m) {
+            mode = m;
+            document.querySelectorAll('.mode-item').forEach(el => el.classList.remove('mode-active'));
+            document.getElementById(`m-${m}`)?.classList.add('mode-active');
+            
+            document.body.className = (m === 'video') ? 'video-mode' : 'photo-mode';
+            showToast(`${m.charAt(0).toUpperCase() + m.slice(1)} Mode`);
+        }
+
+        function cycleFlash() {
+            flashState = (flashState + 1) % 3;
+            btnFlash.classList.remove('flash-active-fill', 'flash-active-edge');
+            
+            if(flashState === 0) {
+                btnFlash.innerHTML = '<i class="fa-solid fa-bolt-slash"></i>';
+                showToast("Flash: Off");
+            } else if(flashState === 1) {
+                btnFlash.innerHTML = '<i class="fa-solid fa-bolt"></i>';
+                btnFlash.classList.add('flash-active-fill');
+                showToast("Flash: Studio Fill");
+            } else {
+                btnFlash.innerHTML = '<i class="fa-solid fa-star"></i>';
+                btnFlash.classList.add('flash-active-edge');
+                showToast("Flash: Edge Neon");
+            }
+        }
+
+        function cycleFilter() {
+            // Remove old filter class
+            if(filters[filterState]) video.classList.remove(filters[filterState]);
+            
+            // Advance state
+            filterState = (filterState + 1) % filters.length;
+            
+            // Add new filter class
+            if(filters[filterState]) video.classList.add(filters[filterState]);
+            
+            showToast(`Filter: ${filterNames[filterState]}`);
+        }
+
+        function setZoom(lvl) {
+            const scaleX = facing === 'user' ? -1 : 1;
+            video.style.transform = `scaleX(${scaleX}) scale(${lvl})`;
+            showToast(`Zoom: ${lvl}x`);
+        }
+
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.style.opacity = 1;
+            setTimeout(() => toast.style.opacity = 0, 1500);
+        }
+
+        // Capture
+        document.getElementById('shutter-ring').addEventListener('click', () => {
+            if(mode === 'photo' || mode === 'portrait') {
+                takePhoto();
+            } else {
+                toggleRec();
+            }
+        });
+
+        function takePhoto() {
+            // Flash Logic
+            let delay = 0;
+            
+            if(flashState === 1) { // Fill
+                flashFill.classList.add('anim-flash-fill');
+                setTimeout(() => flashFill.classList.remove('anim-flash-fill'), 300);
+                delay = 100; // Capture during bright point
+            } else if(flashState === 2) { // Edge
+                flashEdge.classList.add('anim-flash-edge');
+                setTimeout(() => flashEdge.classList.remove('anim-flash-edge'), 600);
+                delay = 100;
+            }
+
+            setTimeout(() => {
+                const cvs = document.createElement('canvas');
+                cvs.width = video.videoWidth;
+                cvs.height = video.videoHeight;
+                const ctx = cvs.getContext('2d');
+                
+                // Handle Flip
+                if(facing === 'user') {
+                    ctx.translate(cvs.width, 0);
+                    ctx.scale(-1, 1);
+                }
+                
+                // Draw Video
+                // Note: CSS filters (B&W) don't automatically apply to canvas ctx.drawImage.
+                // For a real app we'd use WebGL or canvas filters, but here we capture raw.
+                ctx.drawImage(video, 0, 0);
+                
+                // Save
+                thumb.src = cvs.toDataURL('image/jpeg');
+            }, delay);
+        }
+
+        function toggleRec() {
+            if(!isRecording) {
+                isRecording = true;
+                document.body.classList.add('recording');
+                chunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, {type:'video/mp4'});
+                    thumb.src = URL.createObjectURL(blob); // Preview video in thumb?
+                };
+                mediaRecorder.start();
+                showToast("Recording...");
+            } else {
+                isRecording = false;
+                document.body.classList.remove('recording');
+                mediaRecorder.stop();
+                showToast("Saved");
+            }
+        }
+
+        window.addEventListener('load', startCam);
+    </script>
+</body>
+</html>
