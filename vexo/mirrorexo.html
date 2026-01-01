@@ -3,435 +3,709 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>macOS 26 Ultimate Camera</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>VEXO | CamLink Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
         :root {
-            --app-bg: #000000;
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --glass-blur: blur(50px);
-            --accent-yellow: #ffd60a;
-            --accent-red: #ff3b30;
-            --accent-cyan: #30d158;
-            --text-primary: #ffffff;
+            --bg-void: #05010d;
+            --neon-pink: #ff2a6d;
+            --neon-purple: #7f5af0;
+            --glass: rgba(20, 20, 25, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-grad: linear-gradient(135deg, #ff2a6d, #7f5af0);
+            
+            /* Dynamic Lighting Variables */
+            --light-color: #ffffff;
+            --light-width: 0px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; user-select: none; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--app-bg);
-            color: var(--text-primary);
+            background-color: var(--bg-void);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
             height: 100vh;
-            width: 100vw;
             overflow: hidden;
+            background-image: radial-gradient(circle at 50% 10%, #1a103c 0%, #05010d 70%);
             display: flex;
             flex-direction: column;
         }
 
-        /* --- Viewfinder --- */
-        #viewfinder-container {
-            flex: 1;
+        /* --- HEADER --- */
+        nav {
+            height: 60px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; background: rgba(5,1,13,0.95); border-bottom: 1px solid var(--glass-border);
+            z-index: 100;
+        }
+        .brand { 
+            font-weight: 800; font-size: 1.4rem; letter-spacing: -1px;
+            background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            text-decoration: none; display: flex; gap: 10px; align-items: center; 
+        }
+        .back-btn { color: #ccc; text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .back-btn:hover { color: var(--neon-pink); }
+
+        /* --- MAIN STAGE --- */
+        .studio-layout {
+            flex: 1; display: flex; height: calc(100vh - 60px);
+        }
+
+        /* LEFT: VIEWFINDER */
+        .viewfinder-area {
+            flex: 1; position: relative; display: flex; justify-content: center; align-items: center;
+            padding: 40px; overflow: hidden;
+        }
+
+        .camera-wrapper {
             position: relative;
-            overflow: hidden;
-            border-radius: 0 0 32px 32px;
-            background: #111;
+            width: 100%; max-width: 900px;
+            display: flex; justify-content: center;
         }
 
-        video#camera-feed {
+        .camera-frame {
+            position: relative;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-            transition: transform 0.3s ease, filter 0.3s ease;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            
+            /* DYNAMIC RING LIGHTING */
+            border: var(--light-width) solid var(--light-color);
+            box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 0 20px var(--light-color);
+            
+            transition: aspect-ratio 0.3s ease, border-width 0.1s ease, border-color 0.2s ease;
+            z-index: 10;
         }
 
-        /* --- Flash Overlays --- */
-        .flash-overlay {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            opacity: 0;
-            z-index: 50;
+        video#videoFeed { 
+            width: 100%; height: 100%; object-fit: cover; 
+            transform: scaleX(-1); /* Mirror view for user comfort */
+            display: block;
         }
 
-        #flash-fill { background: white; }
+        /* Grid Overlay */
+        .grid-overlay {
+            position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: 0.3s;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px);
+            background-size: 33.3% 33.3%;
+            z-index: 15;
+        }
+        .grid-overlay.active { opacity: 0.5; }
+
+        /* RIGHT: CONTROLS & GALLERY */
+        .control-panel {
+            width: 360px; background: var(--glass);
+            border-left: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: flex; flex-direction: column;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        /* --- CONTROLS --- */
+        .controls-header { 
+            text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; color: #888; 
+            margin-bottom: 15px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+        }
         
-        #flash-edge {
-            box-shadow: inset 0 0 100px 30px var(--accent-yellow), inset 0 0 40px 10px cyan;
-            mix-blend-mode: screen;
+        /* Sliders */
+        .setting-group { margin-bottom: 25px; }
+        .slider-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600; color: #ddd; }
+        
+        input[type=range] {
+            width: 100%; -webkit-appearance: none; background: rgba(255,255,255,0.1); height: 4px; border-radius: 2px; margin-bottom: 5px; cursor: pointer;
         }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px; background: var(--neon-pink); border-radius: 50%; 
+            box-shadow: 0 0 10px var(--neon-pink); transition: 0.2s; margin-top: -6px;
+        }
+        input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); background: white; }
+
+        /* Icon Grid */
+        .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .tool-btn {
+            aspect-ratio: 1; border-radius: 12px; border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.03); color: #999; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; font-size: 0.65rem;
+        }
+        .tool-btn i { font-size: 1.1rem; margin-bottom: 2px; }
+        .tool-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+        
+        /* Active State (Pink/Purple) */
+        .tool-btn.active { 
+            border-color: var(--neon-purple); color: var(--neon-pink); 
+            background: rgba(127, 90, 240, 0.1); 
+            box-shadow: 0 0 15px rgba(127, 90, 240, 0.15);
+        }
+        
+        /* Shutter */
+        .shutter-area {
+            display: flex; justify-content: center; align-items: center; margin-bottom: 25px;
+        }
+        .shutter-btn {
+            width: 76px; height: 76px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);
+            background: transparent; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s;
+        }
+        .shutter-inner { width: 60px; height: 60px; border-radius: 50%; background: white; transition: 0.3s; }
+        .shutter-btn:hover { border-color: white; transform: scale(1.05); }
+        .shutter-btn:active .shutter-inner { transform: scale(0.9); }
+        
+        .shutter-btn.recording { border-color: var(--neon-pink); }
+        .shutter-btn.recording .shutter-inner { background: var(--neon-pink); border-radius: 8px; width: 30px; height: 30px; animation: pulse 1.5s infinite; }
+
+        /* Mode Switch */
+        .mode-switch {
+            background: rgba(0,0,0,0.4); border-radius: 30px; padding: 4px; display: flex; width: 160px; margin: 0 auto 15px; border: 1px solid var(--glass-border);
+        }
+        .mode-opt { flex: 1; text-align: center; padding: 8px 0; font-size: 0.75rem; font-weight: 700; cursor: pointer; z-index: 2; color: #888; transition:0.3s; }
+        .mode-opt.active { color: white; }
+        .mode-bg {
+            position: absolute; top: 4px; bottom: 4px; left: 4px; width: 48%;
+            background: var(--accent-grad); border-radius: 20px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;
+        }
+        .mode-switch[data-mode="video"] .mode-bg { transform: translateX(100%); }
+
+        /* Gallery */
+        .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .media-item {
+            aspect-ratio: 1; background: #000; border-radius: 8px; position: relative; cursor: pointer;
+            border: 2px solid transparent; overflow: hidden;
+        }
+        .media-item img, .media-item video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .media-item:hover img, .media-item:hover video { opacity: 1; }
+        .media-item.selected { border-color: var(--neon-pink); }
+        
+        .preview-trigger {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: grid; place-items: center;
+            opacity: 0; transition: 0.2s; font-size: 1.2rem; color: white;
+        }
+        .media-item:hover .preview-trigger { opacity: 1; }
+
+        /* Buttons */
+        .btn-action {
+            width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px;
+        }
+        .btn-download { background: var(--accent-grad); color: white; }
+        .btn-download:hover { box-shadow: 0 5px 20px rgba(255, 42, 109, 0.3); }
+
+        .btn-clear { 
+            color: var(--neon-pink); background: rgba(255,42,109,0.1); border: 1px solid rgba(255,42,109,0.2); 
+            font-size: 0.7rem; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-clear:hover { background: var(--neon-pink); color: white; }
+
+        /* Full Screen Preview */
+        .preview-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000;
+            display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .preview-modal.active { opacity: 1; pointer-events: all; }
+        .preview-content { max-width: 95%; max-height: 90vh; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .preview-content img, .preview-content video { max-width: 100%; max-height: 90vh; display: block; }
+        .modal-close {
+            position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.1);
+            border-radius: 50%; color: white; display: grid; place-items: center; cursor: pointer;
+        }
+        .modal-close:hover { background: var(--neon-pink); }
 
         /* Animations */
-        .anim-flash-fill { animation: flashBurst 0.25s ease-out forwards; }
-        .anim-flash-edge { animation: edgePulse 0.5s ease-out forwards; }
-
-        @keyframes flashBurst { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
-        @keyframes edgePulse { 0% { opacity: 0; transform: scale(1); } 50% { opacity: 1; transform: scale(1.02); } 100% { opacity: 0; transform: scale(1); } }
-
-        /* --- Filter Styles --- */
-        .filter-bw { filter: grayscale(100%) contrast(1.2); }
-        .filter-vivid { filter: saturate(1.5) contrast(1.1); }
-        .filter-cyber { filter: hue-rotate(-30deg) contrast(1.2) saturate(1.2); }
-
-        /* --- Top Controls --- */
-        .top-island {
-            position: absolute;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 12px;
-            z-index: 100;
-        }
-
-        .glass-pill {
-            background: var(--glass-bg);
-            backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--glass-border);
-            height: 48px;
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            padding: 0 6px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .icon-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            cursor: pointer;
-            color: #fff;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(0.8); opacity: 0.7; } 100% { transform: scale(1); } }
+        .flash { position: fixed; inset: 0; background: white; z-index: 200; opacity: 0; pointer-events: none; }
+        .flash.active { animation: flash 0.3s; }
+        @keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
         
-        .icon-btn:active { transform: scale(0.85); background: rgba(255,255,255,0.2); }
-        
-        /* Flash State Styles */
-        .flash-active-fill { color: var(--accent-yellow); text-shadow: 0 0 10px var(--accent-yellow); }
-        .flash-active-edge { color: var(--accent-cyan); text-shadow: 0 0 10px var(--accent-cyan); }
-
-        /* --- Status Toast --- */
-        #status-toast {
-            position: absolute;
-            top: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 90;
-            border: 1px solid rgba(255,255,255,0.1);
+        /* Countdown */
+        .countdown-overlay {
+            position: absolute; inset: 0; display: none; place-items: center; font-size: 8rem; 
+            font-weight: 900; color: white; text-shadow: 0 0 30px rgba(0,0,0,0.5); z-index: 50;
         }
+        .countdown-overlay.active { display: grid; animation: popIn 0.5s; }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* --- Bottom Deck --- */
-        #bottom-deck {
-            height: 160px;
-            background: var(--app-bg);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding-bottom: 40px;
-            z-index: 100;
-        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-        .mode-row {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-bottom: 25px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .mode-item { color: rgba(255,255,255,0.4); cursor: pointer; transition: 0.3s; }
-        .mode-active { color: var(--accent-yellow); text-shadow: 0 0 15px rgba(255, 214, 10, 0.5); }
-        
-        body.video-mode .mode-active { color: var(--accent-red); text-shadow: none; }
-
-        .control-row {
-            display: flex;
-            justify-content: space-evenly;
-            align-items: center;
-        }
-
-        .gallery-thumb {
-            width: 54px;
-            height: 54px;
-            background: #222;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.15);
-        }
-        .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
-        #shutter-ring {
-            width: 84px;
-            height: 84px;
-            border-radius: 50%;
-            border: 4px solid white;
-            padding: 4px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        
-        #shutter-core {
-            width: 100%;
-            height: 100%;
-            background: white;
-            border-radius: 50%;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* Shutter Interactions */
-        #shutter-ring:active { transform: scale(0.95); }
-        body.video-mode #shutter-core { background: var(--accent-red); }
-        body.recording #shutter-core { transform: scale(0.5); border-radius: 6px; }
-
-        .flip-btn {
-            width: 54px;
-            height: 54px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-        }
     </style>
 </head>
-<body class="photo-mode">
+<body>
 
-    <div id="viewfinder-container">
-        <video id="camera-feed" autoplay playsinline muted></video>
-        
-        <div id="flash-fill" class="flash-overlay"></div>
-        <div id="flash-edge" class="flash-overlay"></div>
-        
-        <div id="status-toast">Flash: Off</div>
+    <div class="flash" id="cameraFlash"></div>
 
-        <div class="top-island">
-            <div class="glass-pill">
-                <div class="icon-btn" id="btn-flash" onclick="cycleFlash()">
-                    <i class="fa-solid fa-bolt-slash"></i>
-                </div>
-                <div class="icon-btn" onclick="cycleFilter()">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                </div>
-                <div class="icon-btn" onclick="showToast('Settings Locked')">
-                    <i class="fa-solid fa-sliders"></i>
+    <div class="preview-modal" id="previewModal">
+        <div class="modal-close" onclick="closePreview()"><i class="fas fa-times"></i></div>
+        <div class="preview-content" id="previewContainer"></div>
+    </div>
+
+    <nav>
+        <a href="../index.html" class="brand">
+            <i class="fas fa-camera-retro"></i> VEXO CAM
+        </a>
+        <a href="../index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Exit</a>
+    </nav>
+
+    <div class="studio-layout">
+        
+        <div class="viewfinder-area">
+            <div class="camera-wrapper">
+                <div class="camera-frame" id="cameraFrame">
+                    <video id="videoFeed" autoplay playsinline muted></video>
+                    <div class="grid-overlay" id="gridOverlay"></div>
+                    
+                    <div style="position: absolute; top:20px; left:25px; display:flex; gap:10px; pointer-events:none; z-index:20;">
+                        <div style="color:#ff2a6d; font-weight:700; display:none; align-items:center; gap:8px; background:rgba(0,0,0,0.6); padding:6px 12px; border-radius:20px; border:1px solid rgba(255,42,109,0.3);" id="recIndicator">
+                            <i class="fas fa-circle" style="font-size:0.6rem;"></i> REC <span id="timer" style="color:white; font-family:monospace; margin-left:4px;">00:00</span>
+                        </div>
+                    </div>
+
+                    <div id="resBadge" style="position: absolute; bottom:20px; right:25px; font-size:0.7rem; color:rgba(255,255,255,0.6); font-weight:600; background:rgba(0,0,0,0.5); padding:4px 8px; border-radius:4px;">
+                        16:9 HD
+                    </div>
+
+                    <div class="countdown-overlay" id="countdownDisplay">3</div>
                 </div>
             </div>
+        </div>
+
+        <div class="control-panel">
             
-            <div class="glass-pill">
-                <div class="icon-btn" onclick="setZoom(1)">1x</div>
-                <div class="icon-btn" onclick="setZoom(2)">2</div>
+            <div class="setting-group">
+                <div class="controls-header">
+                    <span>Ring Light & Tone</span>
+                    <i class="fas fa-sun"></i>
+                </div>
+                
+                <div class="slider-label">
+                    <span>Temp (Color)</span>
+                    <span id="toneValue" style="color:var(--neon-pink)">Neutral</span>
+                </div>
+                <input type="range" id="toneSlider" min="0" max="100" value="50">
+                
+                <div class="slider-label" style="margin-top:12px;">
+                    <span>Light Width (Brightness)</span>
+                </div>
+                <input type="range" id="widthSlider" min="0" max="100" value="0">
             </div>
+
+            <div class="setting-group">
+                <div class="slider-label">
+                    <span>Zoom</span>
+                    <span id="zoomValue">1x</span>
+                </div>
+                <input type="range" id="zoomSlider" min="100" max="300" value="100">
+            </div>
+
+            <div class="tool-grid">
+                <div class="tool-btn" onclick="cycleTimer()" id="timerBtn">
+                    <i class="fas fa-stopwatch"></i>
+                    <span id="timerStatus">OFF</span>
+                </div>
+                <div class="tool-btn" onclick="toggleMirror()" id="mirrorBtn">
+                    <i class="fas fa-arrows-left-right"></i>
+                    <span>Flip</span>
+                </div>
+                <div class="tool-btn" onclick="toggleRatio()" id="ratioBtn">
+                    <i class="fas fa-expand"></i>
+                    <span id="ratioStatus">16:9</span>
+                </div>
+                <div class="tool-btn" onclick="toggleGrid()" id="gridBtn">
+                    <i class="fas fa-border-all"></i>
+                    <span>Grid</span>
+                </div>
+                <div class="tool-btn active" onclick="toggleMic()" id="micBtn">
+                    <i class="fas fa-microphone"></i>
+                    <span id="micStatus">ON</span>
+                </div>
+                <div class="tool-btn" onclick="cycleFilter()" id="filterBtn">
+                    <i class="fas fa-magic"></i>
+                    <span id="filterStatus">Normal</span>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <div class="mode-switch" id="modeSwitch">
+                    <div class="mode-bg"></div>
+                    <div class="mode-opt active" onclick="setMode('photo')">PHOTO</div>
+                    <div class="mode-opt" onclick="setMode('video')">VIDEO</div>
+                </div>
+
+                <div class="shutter-area">
+                    <button class="shutter-btn" id="shutterBtn" onclick="initiateCapture()">
+                        <div class="shutter-inner"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div style="flex:1; display:flex; flex-direction:column; min-height:0; border-top:1px solid var(--glass-border); padding-top:20px;">
+                <div class="controls-header">
+                    <span>Gallery (<span id="count">0</span>)</span>
+                    <button class="btn-clear" onclick="clearAllGallery()">
+                        <i class="fas fa-trash-alt"></i> Clear
+                    </button>
+                </div>
+                <div class="gallery-area" style="overflow-y:auto; flex:1;">
+                    <div class="gallery-grid" id="galleryGrid"></div>
+                </div>
+                
+                <button class="btn-action btn-download" onclick="downloadSelected()">
+                    <i class="fas fa-download"></i> Download Selected
+                </button>
+            </div>
+
         </div>
     </div>
 
-    <div id="bottom-deck">
-        <div class="mode-row">
-            <div class="mode-item" id="m-video" onclick="setMode('video')">Video</div>
-            <div class="mode-item mode-active" id="m-photo" onclick="setMode('photo')">Photo</div>
-            <div class="mode-item" onclick="setMode('portrait')">Portrait</div>
-        </div>
-
-        <div class="control-row">
-            <div class="gallery-thumb">
-                <img id="last-thumb" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
-            </div>
-
-            <div id="shutter-ring">
-                <div id="shutter-core"></div>
-            </div>
-
-            <div class="flip-btn" onclick="flipCam()">
-                <i class="fa-solid fa-rotate"></i>
-            </div>
-        </div>
-    </div>
+    <canvas id="captureCanvas" style="display:none;"></canvas>
 
     <script>
-        // State
-        let stream = null;
-        let facing = 'user';
+        // --- STATE ---
+        let stream;
         let mode = 'photo';
-        let isRecording = false;
         let mediaRecorder;
-        let chunks = [];
+        let recordedChunks = [];
+        let recInterval;
+        let galleryItems = [];
+        let selectedIds = new Set();
         
-        // Flash: 0=Off, 1=Fill (Standard), 2=Edge (Neon)
-        let flashState = 0; 
+        // Params
+        let lightColor = '#ffffff'; 
+        let currentZoom = 1;
+        let isMirrored = true;
+        let isMicOn = true;
+        let timerDuration = 0;
+        let isRecording = false;
+        let currentAspect = '16/9';
         
-        // Filters: 0=None, 1=B&W, 2=Vivid, 3=Cyber
-        let filterState = 0;
-        const filters = ['', 'filter-bw', 'filter-vivid', 'filter-cyber'];
-        const filterNames = ['Normal', 'Mono', 'Vivid', 'Cyber'];
+        // Filters
+        const filters = ['Normal', 'B&W', 'Cyber', 'Vintage'];
+        let filterIndex = 0;
 
-        // Elements
-        const video = document.getElementById('camera-feed');
-        const flashFill = document.getElementById('flash-fill');
-        const flashEdge = document.getElementById('flash-edge');
-        const toast = document.getElementById('status-toast');
-        const thumb = document.getElementById('last-thumb');
-        const btnFlash = document.getElementById('btn-flash');
+        // --- DOM ---
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('captureCanvas');
+        const toneSlider = document.getElementById('toneSlider');
+        const widthSlider = document.getElementById('widthSlider');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const frame = document.getElementById('cameraFrame');
+        const shutterBtn = document.getElementById('shutterBtn');
+        const galleryGrid = document.getElementById('galleryGrid');
 
-        // Init
-        async function startCam() {
-            if(stream) stream.getTracks().forEach(t => t.stop());
+        // --- INIT ---
+        async function startCamera() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
-                    audio: true
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 1920, height: 1080 },
+                    audio: true 
                 });
                 video.srcObject = stream;
-            } catch(e) { console.error(e); }
+                updateTransform();
+            } catch (err) {
+                alert("Please allow Camera access.");
+            }
+        }
+        startCamera();
+
+        // --- LIGHTING ---
+        function updateLighting() {
+            document.documentElement.style.setProperty('--light-color', lightColor);
+            document.documentElement.style.setProperty('--light-width', widthSlider.value + 'px');
         }
 
-        // Logic
-        function flipCam() {
-            facing = facing === 'user' ? 'environment' : 'user';
-            video.style.transform = facing === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
-            startCam();
-        }
+        toneSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            let filterVal = '';
+            let label = 'Neutral';
 
-        function setMode(m) {
-            mode = m;
-            document.querySelectorAll('.mode-item').forEach(el => el.classList.remove('mode-active'));
-            document.getElementById(`m-${m}`)?.classList.add('mode-active');
-            
-            document.body.className = (m === 'video') ? 'video-mode' : 'photo-mode';
-            showToast(`${m.charAt(0).toUpperCase() + m.slice(1)} Mode`);
-        }
-
-        function cycleFlash() {
-            flashState = (flashState + 1) % 3;
-            btnFlash.classList.remove('flash-active-fill', 'flash-active-edge');
-            
-            if(flashState === 0) {
-                btnFlash.innerHTML = '<i class="fa-solid fa-bolt-slash"></i>';
-                showToast("Flash: Off");
-            } else if(flashState === 1) {
-                btnFlash.innerHTML = '<i class="fa-solid fa-bolt"></i>';
-                btnFlash.classList.add('flash-active-fill');
-                showToast("Flash: Studio Fill");
+            if (val === 50) {
+                lightColor = '#ffffff'; 
+            } else if (val > 50) {
+                // Warm
+                const i = (val - 50) / 50; 
+                filterVal = `sepia(${i*0.4})`; 
+                label = 'Warm';
+                lightColor = val > 80 ? '#ffaa00' : '#ffddaa';
             } else {
-                btnFlash.innerHTML = '<i class="fa-solid fa-star"></i>';
-                btnFlash.classList.add('flash-active-edge');
-                showToast("Flash: Edge Neon");
+                // Cool
+                const i = (50 - val) / 50;
+                filterVal = `hue-rotate(${i*20}deg)`; 
+                label = 'Cool';
+                lightColor = val < 20 ? '#00ccff' : '#ccffff';
+            }
+            
+            document.getElementById('toneValue').innerText = label;
+            updateLighting();
+            applyVideoFilters();
+        });
+
+        widthSlider.addEventListener('input', updateLighting);
+
+        // --- TOOLS ---
+        zoomSlider.addEventListener('input', (e) => {
+            currentZoom = e.target.value / 100;
+            document.getElementById('zoomValue').innerText = currentZoom + 'x';
+            updateTransform();
+        });
+
+        function toggleMirror() {
+            isMirrored = !isMirrored;
+            document.getElementById('mirrorBtn').classList.toggle('active');
+            updateTransform();
+        }
+
+        function updateTransform() {
+            const scaleX = isMirrored ? -1 : 1;
+            video.style.transform = `scaleX(${scaleX}) scale(${currentZoom})`;
+        }
+
+        function toggleRatio() {
+            if(currentAspect === '16/9') {
+                currentAspect = '4/3';
+                frame.style.aspectRatio = '4/3';
+                document.getElementById('ratioStatus').innerText = '4:3';
+                document.getElementById('resBadge').innerText = '4:3 SD';
+            } else {
+                currentAspect = '16/9';
+                frame.style.aspectRatio = '16/9';
+                document.getElementById('ratioStatus').innerText = '16:9';
+                document.getElementById('resBadge').innerText = '16:9 HD';
             }
         }
 
         function cycleFilter() {
-            // Remove old filter class
-            if(filters[filterState]) video.classList.remove(filters[filterState]);
-            
-            // Advance state
-            filterState = (filterState + 1) % filters.length;
-            
-            // Add new filter class
-            if(filters[filterState]) video.classList.add(filters[filterState]);
-            
-            showToast(`Filter: ${filterNames[filterState]}`);
+            filterIndex = (filterIndex + 1) % filters.length;
+            const name = filters[filterIndex];
+            document.getElementById('filterStatus').innerText = name;
+            applyVideoFilters();
         }
 
-        function setZoom(lvl) {
-            const scaleX = facing === 'user' ? -1 : 1;
-            video.style.transform = `scaleX(${scaleX}) scale(${lvl})`;
-            showToast(`Zoom: ${lvl}x`);
+        function applyVideoFilters() {
+            let css = '';
+            const tVal = parseInt(toneSlider.value);
+            if(tVal > 50) css += `sepia(${(tVal-50)/150}) `;
+            else if(tVal < 50) css += `hue-rotate(${(50-tVal)/2.5}deg) `;
+
+            if(filters[filterIndex] === 'B&W') css += 'grayscale(1) contrast(1.2) ';
+            if(filters[filterIndex] === 'Cyber') css += 'contrast(1.3) saturate(1.5) hue-rotate(-10deg) ';
+            if(filters[filterIndex] === 'Vintage') css += 'sepia(0.5) contrast(0.9) brightness(1.1) ';
+
+            video.style.filter = css;
         }
 
-        function showToast(msg) {
-            toast.innerText = msg;
-            toast.style.opacity = 1;
-            setTimeout(() => toast.style.opacity = 0, 1500);
-        }
-
-        // Capture
-        document.getElementById('shutter-ring').addEventListener('click', () => {
-            if(mode === 'photo' || mode === 'portrait') {
-                takePhoto();
+        function cycleTimer() {
+            const opts = [0, 3, 5, 10];
+            const currIdx = opts.indexOf(timerDuration);
+            timerDuration = opts[(currIdx + 1) % opts.length];
+            const btn = document.getElementById('timerBtn');
+            const txt = document.getElementById('timerStatus');
+            
+            if(timerDuration > 0) {
+                btn.classList.add('active');
+                txt.innerText = timerDuration + 's';
             } else {
-                toggleRec();
+                btn.classList.remove('active');
+                txt.innerText = 'OFF';
             }
-        });
+        }
 
-        function takePhoto() {
-            // Flash Logic
-            let delay = 0;
-            
-            if(flashState === 1) { // Fill
-                flashFill.classList.add('anim-flash-fill');
-                setTimeout(() => flashFill.classList.remove('anim-flash-fill'), 300);
-                delay = 100; // Capture during bright point
-            } else if(flashState === 2) { // Edge
-                flashEdge.classList.add('anim-flash-edge');
-                setTimeout(() => flashEdge.classList.remove('anim-flash-edge'), 600);
-                delay = 100;
+        function toggleGrid() {
+            document.getElementById('gridOverlay').classList.toggle('active');
+            document.getElementById('gridBtn').classList.toggle('active');
+        }
+
+        function toggleMic() {
+            isMicOn = !isMicOn;
+            stream.getAudioTracks().forEach(t => t.enabled = isMicOn);
+            const btn = document.getElementById('micBtn');
+            const txt = document.getElementById('micStatus');
+            if(isMicOn) { btn.classList.add('active'); txt.innerText="ON"; }
+            else { btn.classList.remove('active'); txt.innerText="OFF"; }
+        }
+
+        // --- CAPTURE ---
+        function initiateCapture() {
+            if (mode === 'video' && isRecording) {
+                stopRecording();
+                return;
             }
+            if (timerDuration > 0) {
+                runCountdown(timerDuration, triggerShutter);
+            } else {
+                triggerShutter();
+            }
+        }
 
-            setTimeout(() => {
-                const cvs = document.createElement('canvas');
-                cvs.width = video.videoWidth;
-                cvs.height = video.videoHeight;
-                const ctx = cvs.getContext('2d');
-                
-                // Handle Flip
-                if(facing === 'user') {
-                    ctx.translate(cvs.width, 0);
-                    ctx.scale(-1, 1);
+        function runCountdown(sec, cb) {
+            const el = document.getElementById('countdownDisplay');
+            el.innerText = sec;
+            el.classList.add('active');
+            let c = sec;
+            const i = setInterval(() => {
+                c--;
+                if(c>0) {
+                    el.innerText = c;
+                    el.classList.remove('active');
+                    void el.offsetWidth;
+                    el.classList.add('active');
+                } else {
+                    clearInterval(i);
+                    el.classList.remove('active');
+                    cb();
                 }
-                
-                // Draw Video
-                // Note: CSS filters (B&W) don't automatically apply to canvas ctx.drawImage.
-                // For a real app we'd use WebGL or canvas filters, but here we capture raw.
-                ctx.drawImage(video, 0, 0);
-                
-                // Save
-                thumb.src = cvs.toDataURL('image/jpeg');
-            }, delay);
+            }, 1000);
         }
 
-        function toggleRec() {
-            if(!isRecording) {
-                isRecording = true;
-                document.body.classList.add('recording');
-                chunks = [];
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, {type:'video/mp4'});
-                    thumb.src = URL.createObjectURL(blob); // Preview video in thumb?
-                };
-                mediaRecorder.start();
-                showToast("Recording...");
-            } else {
-                isRecording = false;
-                document.body.classList.remove('recording');
-                mediaRecorder.stop();
-                showToast("Saved");
+        function triggerShutter() {
+            if(mode==='photo') takePhoto();
+            else toggleRecording();
+        }
+
+        // --- PHOTO LOGIC ---
+        function takePhoto() {
+            const flash = document.getElementById('cameraFlash');
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 300);
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.save();
+            if (isMirrored) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
             }
+            if(currentZoom > 1) {
+               const w = canvas.width / currentZoom;
+               const h = canvas.height / currentZoom;
+               const x = (canvas.width - w) / 2;
+               const y = (canvas.height - h) / 2;
+               ctx.drawImage(video, x, y, w, h, 0, 0, canvas.width, canvas.height);
+            } else {
+               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
+            ctx.restore();
+
+            // Simple tone mapping (Canvas filter support depends on browser, this is standard)
+            // We'll trust the browser context here or accept raw capture for speed.
+            
+            const data = canvas.toDataURL('image/jpeg', 0.9);
+            addToGallery('photo', data);
         }
 
-        window.addEventListener('load', startCam);
+        // --- VIDEO LOGIC ---
+        function toggleRecording() {
+            if(isRecording) stopRecording(); else startRecording();
+        }
+
+        function startRecording() {
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => { if(e.data.size>0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, {type: 'video/webm'});
+                const url = URL.createObjectURL(blob);
+                addToGallery('video', url, blob);
+            };
+            mediaRecorder.start();
+            isRecording = true;
+            shutterBtn.classList.add('recording');
+            document.getElementById('recIndicator').style.display='flex';
+            
+            let start = Date.now();
+            recInterval = setInterval(() => {
+                const d = Math.floor((Date.now()-start)/1000);
+                const m = Math.floor(d/60).toString().padStart(2,'0');
+                const s = (d%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function stopRecording() {
+            if(!mediaRecorder) return;
+            mediaRecorder.stop();
+            isRecording = false;
+            shutterBtn.classList.remove('recording');
+            document.getElementById('recIndicator').style.display='none';
+            clearInterval(recInterval);
+            document.getElementById('timer').innerText="00:00";
+        }
+
+        // --- GALLERY ---
+        function addToGallery(type, url, blob) {
+            const id = Date.now();
+            galleryItems.unshift({id, type, url, blob});
+            renderGallery();
+        }
+
+        function renderGallery() {
+            galleryGrid.innerHTML = '';
+            document.getElementById('count').innerText = galleryItems.length;
+            galleryItems.forEach(item => {
+                const el = document.createElement('div');
+                el.className = `media-item ${selectedIds.has(item.id) ? 'selected' : ''}`;
+                el.onclick = (e) => {
+                    if(!e.target.closest('.preview-trigger')) toggleSelect(item.id);
+                };
+                
+                const content = item.type === 'photo' 
+                    ? `<img src="${item.url}">` 
+                    : `<video src="${item.url}" muted></video>`;
+                
+                const btn = `<div class="preview-trigger" onclick="openPreview(${item.id})"><i class="fas fa-eye"></i></div>`;
+                el.innerHTML = content + btn;
+                galleryGrid.appendChild(el);
+            });
+        }
+
+        function toggleSelect(id) {
+            if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+            renderGallery();
+        }
+
+        function clearAllGallery() {
+            if(confirm('Clear Loot Box?')) { galleryItems=[]; selectedIds.clear(); renderGallery(); }
+        }
+
+        function downloadSelected() {
+            galleryItems.filter(i => selectedIds.has(i.id)).forEach(i => {
+                const a = document.createElement('a');
+                a.href = i.url;
+                a.download = `vexo_${i.id}.${i.type==='photo'?'jpg':'webm'}`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            });
+            selectedIds.clear(); renderGallery();
+        }
+
+        function openPreview(id) {
+            const item = galleryItems.find(i => i.id === id);
+            const box = document.getElementById('previewContainer');
+            if(item.type==='photo') box.innerHTML = `<img src="${item.url}">`;
+            else box.innerHTML = `<video src="${item.url}" controls autoplay></video>`;
+            document.getElementById('previewModal').classList.add('active');
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').classList.remove('active');
+            document.getElementById('previewContainer').innerHTML = '';
+        }
+
+        function setMode(m) {
+            mode = m;
+            document.querySelectorAll('.mode-opt').forEach(e => e.classList.remove('active'));
+            document.querySelector('.mode-switch').setAttribute('data-mode', m);
+            if(m==='photo') document.querySelector('.mode-opt:first-child').classList.add('active');
+            else document.querySelector('.mode-opt:last-child').classList.add('active');
+        }
+
     </script>
 </body>
 </html>
