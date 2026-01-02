@@ -45,9 +45,11 @@
             transition: opacity 0.6s var(--ease-smooth), visibility 0.6s;
         }
         .logo-svg { width: 100px; height: 100px; overflow: visible; }
+        
+        /* Updated Path Length for W animation */
         .logo-path {
             fill: none; stroke: url(#grad1); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round;
-            stroke-dasharray: 300; stroke-dashoffset: 300; animation: drawLogo 1s var(--spring-bounce) forwards;
+            stroke-dasharray: 400; stroke-dashoffset: 400; animation: drawLogo 1.2s var(--spring-bounce) forwards;
         }
         @keyframes drawLogo { to { stroke-dashoffset: 0; } }
 
@@ -254,12 +256,17 @@
 <body>
 
     <div id="flashLoader">
-        <svg class="logo-svg" viewBox="0 0 100 100"><path class="logo-path" d="M20,20 L50,80 L80,20" /></svg>
+        <svg class="logo-svg" viewBox="0 0 100 100">
+            <path class="logo-path" d="M15,25 L35,75 L50,45 L65,75 L85,25" />
+        </svg>
     </div>
 
     <nav id="navbar">
         <div class="brand" onclick="location.reload()">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="url(#grad1)"><path d="M4 4l8 16 8-16H4z"/></svg> WeatherExo
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#grad1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 5 L9 19 L12 11 L15 19 L20 5" />
+            </svg> 
+            WeatherExo
         </div>
         
         <div class="nav-actions">
