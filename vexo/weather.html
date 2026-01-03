@@ -46,7 +46,6 @@
         }
         .logo-svg { width: 100px; height: 100px; overflow: visible; }
         
-        /* Updated Path Length for W animation */
         .logo-path {
             fill: none; stroke: url(#grad1); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round;
             stroke-dasharray: 400; stroke-dashoffset: 400; animation: drawLogo 1.2s var(--spring-bounce) forwards;
@@ -213,7 +212,7 @@
         }
         .btn-icon-glass:hover { background: var(--neon-pink); transform: scale(1.1); }
 
-        /* --- RECOMMENDATIONS (NEW) --- */
+        /* --- RECOMMENDATIONS & GEO --- */
         .rec-container { margin-top: 40px; }
         .rec-title { font-size: 0.9rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: 600; }
         .rec-grid { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -229,6 +228,18 @@
         }
         .rec-tag i { color: var(--neon-blue); font-size: 0.8rem; }
 
+        /* NEW GEO BUTTON STYLE */
+        .geo-btn-trigger {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(0, 247, 255, 0.1); border: 1px solid var(--neon-blue);
+            color: var(--neon-blue); padding: 12px 20px; border-radius: 8px;
+            font-weight: 600; cursor: pointer; margin-top: 20px;
+            transition: 0.3s; width: fit-content;
+        }
+        .geo-btn-trigger:hover {
+            background: var(--neon-blue); color: #000; box-shadow: 0 0 30px rgba(0, 247, 255, 0.3);
+        }
+
         @keyframes heroEntrance { to { opacity: 1; transform: translateY(0); } }
         
         .error-toast {
@@ -239,6 +250,7 @@
             z-index: 9999;
         }
         .error-toast.active { transform: translateX(-50%) translateY(0); }
+        .error-toast.blue { background: rgba(0, 247, 255, 0.2); border-color: var(--neon-blue); }
 
         @media(max-width: 768px) {
             .scroll-btn { display: none !important; }
@@ -270,6 +282,9 @@
         </div>
         
         <div class="nav-actions">
+            <div class="btn-icon-glass" onclick="detectLocation()" title="Use Current Location">
+                <i class="fas fa-location-arrow"></i>
+            </div>
             <div class="search-trigger" onclick="toggleSearch(true)">
                 <i class="fas fa-search"></i>
                 <span style="font-weight:600; font-size:0.9rem;">Search City</span>
@@ -284,6 +299,10 @@
         <div style="width: 100%; max-width: 1000px; margin: 0 auto;">
             <input type="text" class="search-input" id="searchInput" placeholder="Type a city name..." autocomplete="off">
             
+            <div class="geo-btn-trigger" onclick="detectLocation()">
+                <i class="fas fa-crosshairs"></i> Use My Current Location
+            </div>
+
             <div class="rec-container">
                 <div class="rec-title">Popular Cities</div>
                 <div class="rec-grid" id="recGrid">
@@ -355,7 +374,6 @@
         const API_KEY = "68b86dce4fea4197a39234452260101"; 
         const BASE_URL = "https://api.weatherapi.com/v1";
 
-        // --- POPULAR CITIES CONFIG ---
         const popularCities = [
             "London", "New York", "Tokyo", "Paris", "Sydney", 
             "Dubai", "Mumbai", "Singapore", "Los Angeles", 
@@ -382,18 +400,42 @@
             `).join('');
         }
 
-        async function fetchWeather(city) {
+        // --- NEW GEOLOCATION LOGIC ---
+        function detectLocation() {
+            if (!navigator.geolocation) {
+                showToast("Geolocation is not supported by your browser", false);
+                return;
+            }
+
+            showToast("Locating...", true); // Show "Locating" toast
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Success: Convert to lat,lon string
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    fetchWeather(`${lat},${lon}`);
+                },
+                () => {
+                    // Error
+                    showToast("Unable to retrieve location. Check permissions.");
+                }
+            );
+        }
+
+        async function fetchWeather(query) {
             try {
-                const res = await fetch(`${BASE_URL}/forecast.json?key=${API_KEY}&q=${city}&days=3&aqi=no&alerts=no`);
+                // query can be a city name OR "lat,lon"
+                const res = await fetch(`${BASE_URL}/forecast.json?key=${API_KEY}&q=${query}&days=3&aqi=no&alerts=no`);
                 if (!res.ok) throw new Error("City not found");
                 const data = await res.json();
 
                 updateHero(data);
                 updateForecasts(data);
                 toggleSearch(false);
-                document.getElementById('searchInput').value = ''; // Clear input
+                document.getElementById('searchInput').value = ''; 
             } catch (error) {
-                showError();
+                showToast("City not found. Try again.");
             }
         }
 
@@ -422,7 +464,6 @@
         function updateForecasts(data) {
             const forecastDays = data.forecast.forecastday;
 
-            // Hourly (rest of today)
             const hours = forecastDays[0].hour;
             const currentHour = new Date().getHours();
             const upcomingHours = hours.filter((_, index) => index >= currentHour);
@@ -438,7 +479,6 @@
                 </div>`;
             }).join('');
 
-            // Daily
             document.getElementById('dailyRail').innerHTML = forecastDays.map((d, i) => {
                 const dateObj = new Date(d.date);
                 const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
@@ -474,8 +514,13 @@
             }
         });
 
-        function showError() {
+        // Updated toast handler to support status messages
+        function showToast(msg, isInfo = false) {
             const toast = document.getElementById('errorToast');
+            toast.innerText = msg;
+            if(isInfo) toast.classList.add('blue');
+            else toast.classList.remove('blue');
+            
             toast.classList.add('active');
             setTimeout(() => toast.classList.remove('active'), 3000);
         }
