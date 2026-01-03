@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#05010d">
+    <title>POKEXO | The Complete Pokedex</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* --- DESIGN SYSTEM: NEON-KINETIC --- */
+        :root {
+            --bg-void: #05010d;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 100, 255, 0.1);
+            --neon-pink: #ff2a6d;
+            --neon-cyan: #05d9e8;
+            --neon-purple: #7f5af0;
+            --accent-grad: linear-gradient(135deg, #ff2a6d, #7f5af0);
+            --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-void);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        body.locked { overflow: hidden; height: 100vh; }
+
+        /* NOISE TEXTURE */
+        .noise {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* --- LOADER --- */
+        #flashLoader {
+            position: fixed; inset: 0; background: #020005; z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.6s var(--ease-smooth), visibility 0.6s;
+        }
+        .pokeball-loader {
+            width: 80px; height: 80px; border: 4px solid var(--neon-pink); border-radius: 50%;
+            position: relative; animation: spin 1s linear infinite;
+            box-shadow: 0 0 20px var(--neon-pink);
+        }
+        .pokeball-loader::after {
+            content:''; position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--neon-pink); transform: translateY(-50%);
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- NAV --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 80px; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 4vw; background: rgba(5, 1, 13, 0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .brand { 
+            font-weight: 900; font-size: 1.8rem; letter-spacing: -1px; 
+            display: flex; align-items: center; gap: 8px; cursor: pointer;
+            background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .search-trigger {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            padding: 0 20px; height: 44px; border-radius: 30px; display: flex; align-items: center; gap: 12px;
+            transition: 0.3s var(--spring-bounce); cursor: pointer;
+        }
+        .search-trigger:hover { transform: scale(1.05); border-color: var(--neon-pink); box-shadow: 0 0 20px rgba(255, 42, 109, 0.2); }
+        .kbd-shortcut {
+            font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 4px 8px;
+            border-radius: 6px; border: 1px solid var(--glass-border); color: #d1d5db;
+        }
+
+        /* --- GRID LAYOUT --- */
+        .container {
+            max-width: 1400px; margin: 120px auto 50px; padding: 0 4vw; position: relative; z-index: 10;
+        }
+        .section-header {
+            font-size: 2rem; font-weight: 800; margin-bottom: 30px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .poke-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px; padding-bottom: 100px;
+        }
+
+        /* --- POKE CARD (HOLOGRAPHIC) --- */
+        .poke-card {
+            background: rgba(255,255,255,0.03); border-radius: 20px; padding: 20px;
+            position: relative; overflow: hidden; cursor: pointer;
+            border: 1px solid var(--glass-border); transition: all 0.4s var(--spring-bounce);
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 0; animation: fadeUp 0.5s var(--ease-smooth) forwards;
+        }
+        .poke-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            background: rgba(255,255,255,0.08); border-color: var(--neon-purple);
+            box-shadow: 0 10px 40px rgba(127, 90, 240, 0.3);
+        }
+        
+        .poke-id {
+            position: absolute; top: 15px; right: 15px; font-size: 0.8rem;
+            color: rgba(255,255,255,0.4); font-weight: 700; font-family: monospace;
+        }
+        .poke-img {
+            width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            transition: transform 0.4s var(--spring-bounce); z-index: 2;
+        }
+        .poke-card:hover .poke-img { transform: scale(1.2) translateY(-5px); }
+        
+        .poke-name {
+            font-size: 1.1rem; font-weight: 700; text-transform: capitalize;
+            margin-top: 10px; z-index: 2; text-align: center;
+        }
+        
+        .type-badge {
+            font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; text-transform: uppercase;
+            font-weight: 700; margin-top: 8px; display: inline-block;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- SEARCH OVERLAY --- */
+        .search-ui {
+            position: fixed; inset: 0; background: rgba(5, 1, 13, 0.98); backdrop-filter: blur(35px);
+            z-index: 6000; opacity: 0; pointer-events: none;
+            transform: scale(0.9) translateY(40px); 
+            transition: opacity 0.3s ease, transform 0.5s var(--spring-bounce);
+            display: flex; flex-direction: column; padding: 20px 4vw;
+        }
+        .search-ui.active { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
+
+        .search-input {
+            width: 100%; background: transparent; border: none; border-bottom: 2px solid #333;
+            font-size: clamp(2rem, 5vw, 4rem); font-weight: 800; color: white; padding: 20px 0;
+            transition: 0.3s; font-family: 'Outfit', sans-serif;
+        }
+        .search-input:focus { border-color: var(--neon-pink); }
+        .close-btn { position: absolute; top: 30px; right: 5%; font-size: 2rem; cursor: pointer; transition: 0.3s; }
+        .close-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
+
+        /* --- DETAILS MODAL --- */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 7000;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: 0.4s var(--ease-smooth); backdrop-filter: blur(10px);
+        }
+        .modal.active { opacity: 1; pointer-events: all; }
+
+        .wiki-card {
+            width: 90%; max-width: 900px; background: #0a0510; border-radius: 30px;
+            border: 1px solid var(--neon-purple); overflow: hidden;
+            display: flex; flex-direction: column; position: relative;
+            transform: scale(0.9) translateY(50px); transition: 0.5s var(--spring-bounce);
+            box-shadow: 0 0 50px rgba(127, 90, 240, 0.2);
+        }
+        .modal.active .wiki-card { transform: scale(1) translateY(0); }
+
+        .wiki-header {
+            background: linear-gradient(135deg, rgba(127, 90, 240, 0.2), rgba(0,0,0,0));
+            padding: 40px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .wiki-img-lg {
+            width: 200px; height: 200px; object-fit: contain;
+            filter: drop-shadow(0 0 30px var(--neon-pink));
+            animation: float 3s ease-in-out infinite;
+        }
+        .wiki-title-group { text-align: left; }
+        .wiki-name { font-size: 3rem; font-weight: 900; text-transform: capitalize; margin: 0; }
+        .wiki-subtitle { font-size: 1.2rem; color: #ccc; font-family: monospace; letter-spacing: 2px; }
+
+        .wiki-stats { padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .stat-row { margin-bottom: 15px; }
+        .stat-label { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; color: #aaa; }
+        .progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--neon-cyan); width: 0%; transition: width 1s var(--spring-bounce); border-radius: 10px; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        @media(max-width: 768px) {
+            .wiki-header { flex-direction: column; text-align: center; }
+            .wiki-stats { grid-template-columns: 1fr; }
+            .wiki-title-group { text-align: center; margin-top: 20px; }
+            .search-trigger span, .kbd-shortcut { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise"></div>
+
+    <div id="flashLoader">
+        <div class="pokeball-loader"></div>
+    </div>
+
+    <nav>
+        <div class="brand" onclick="location.reload()">POKEXO</div>
+        <div class="search-trigger" onclick="toggleSearch(true)">
+            <i class="fas fa-search"></i>
+            <span>Search Dex</span>
+            <div class="kbd-shortcut">Ctrl K</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="section-header">
+            <span>Pokedex</span>
+            <span style="font-size:1rem; color:var(--neon-purple); font-family:monospace;">ALL GENERATIONS (1-9)</span>
+        </div>
+        <div class="poke-grid" id="pokeGrid"></div>
+    </div>
+
+    <div class="search-ui" id="searchUI">
+        <div class="close-btn" onclick="toggleSearch(false)"><i class="fas fa-times"></i></div>
+        <div style="width: 100%; max-width: 800px; margin: 0 auto;">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search Pokemon..." autocomplete="off">
+            <div class="poke-grid" id="searchResults" style="margin-top:40px; overflow-y:auto; max-height:70vh;"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="wikiModal" onclick="closeWiki(event)">
+        <div class="wiki-card" id="wikiContent">
+            </div>
+    </div>
+
+    <script>
+        const API_BASE = "https://pokeapi.co/api/v2";
+        let allPokemon = []; 
+
+        window.onload = async () => {
+            setTimeout(() => document.getElementById('flashLoader').style.opacity = '0', 500);
+            setTimeout(() => document.getElementById('flashLoader').style.visibility = 'hidden', 1100);
+            
+            await fetchPokemonList();
+            typeWriter();
+        };
+
+        /* --- FETCH ALL DATA (Performance Optimized) --- */
+        async function fetchPokemonList() {
+            // Fetch ALL 1025 Pokemon
+            const res = await fetch(`${API_BASE}/pokemon?limit=1025`);
+            const data = await res.json();
+            
+            const grid = document.getElementById('pokeGrid');
+            grid.innerHTML = '';
+            
+            // 1. Render first 50 immediately (Fast LCP)
+            const initialBatch = data.results.slice(0, 50);
+            renderBatch(initialBatch, grid);
+
+            // 2. Store all for search index
+            allPokemon = data.results; 
+
+            // 3. Render the rest in background (Lazy Render)
+            setTimeout(() => {
+                renderBatch(data.results.slice(50), grid);
+            }, 800);
+        }
+
+        function renderBatch(list, container) {
+            const fragment = document.createDocumentFragment();
+            list.forEach((p, index) => {
+                const id = p.url.split('/')[6];
+                const card = createCard(p.name, id, index);
+                fragment.appendChild(card);
+            });
+            container.appendChild(fragment);
+        }
+
+        function createCard(name, id, index) {
+            const el = document.createElement('div');
+            el.className = 'poke-card';
+            // Only animate the first few to save CPU
+            if(index < 20) el.style.animationDelay = `${index * 0.05}s`;
+            
+            el.onclick = () => openWiki(id);
+            
+            const imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+
+            el.innerHTML = `
+                <div class="poke-id">#${String(id).padStart(3, '0')}</div>
+                <img src="${imgUrl}" class="poke-img" loading="lazy" alt="${name}">
+                <div class="poke-name">${name}</div>
+            `;
+            return el;
+        }
+
+        /* --- WIKI MODAL LOGIC --- */
+        async function openWiki(id) {
+            const modal = document.getElementById('wikiModal');
+            const content = document.getElementById('wikiContent');
+            
+            modal.classList.add('active');
+            document.body.classList.add('locked');
+            
+            const res = await fetch(`${API_BASE}/pokemon/${id}`);
+            const p = await res.json();
+            
+            const typeBadges = p.types.map(t => 
+                `<span class="type-badge" style="border-color:var(--neon-pink); color:var(--neon-pink)">${t.type.name}</span>`
+            ).join(' ');
+
+            const stats = p.stats.map(s => `
+                <div class="stat-row">
+                    <div class="stat-label"><span>${s.stat.name.toUpperCase()}</span> <span>${s.base_stat}</span></div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: ${(s.base_stat / 255) * 100}%"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            content.innerHTML = `
+                <div class="wiki-header">
+                    <div class="wiki-title-group">
+                        <div class="wiki-subtitle">#${String(p.id).padStart(3, '0')}</div>
+                        <h1 class="wiki-name">${p.name}</h1>
+                        <div style="margin-top:10px;">${typeBadges}</div>
+                    </div>
+                    <img src="${p.sprites.other['official-artwork'].front_default}" class="wiki-img-lg">
+                </div>
+                <div class="wiki-stats">
+                    <div>
+                        <h3 style="margin-top:0; color:var(--neon-cyan)">BASE STATS</h3>
+                        ${stats}
+                    </div>
+                    <div>
+                        <h3 style="margin-top:0; color:var(--neon-purple)">INFO</h3>
+                        <p style="color:#aaa; line-height:1.6">
+                            Height: ${p.height / 10}m<br>
+                            Weight: ${p.weight / 10}kg<br>
+                            Abilities: ${p.abilities.map(a => a.ability.name).join(', ')}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeWiki(e) {
+            if(e.target.id === 'wikiModal') {
+                document.getElementById('wikiModal').classList.remove('active');
+                document.body.classList.remove('locked');
+            }
+        }
+
+        /* --- SEARCH ENGINE --- */
+        function toggleSearch(show) {
+            const el = document.getElementById('searchUI');
+            if(show) {
+                el.classList.add('active');
+                document.body.classList.add('locked');
+                setTimeout(() => document.getElementById('searchInput').focus(), 100);
+            } else {
+                el.classList.remove('active');
+                document.body.classList.remove('locked');
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const grid = document.getElementById('searchResults');
+            grid.innerHTML = '';
+
+            if(query.length < 2) return;
+
+            const matches = allPokemon.filter(p => p.name.includes(query));
+            matches.slice(0, 10).forEach((p, idx) => {
+                const id = p.url.split('/')[6];
+                const card = createCard(p.name, id, idx);
+                grid.appendChild(card);
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); toggleSearch(true); }
+            if(e.key === 'Escape') toggleSearch(false);
+        });
+
+        /* --- TYPEWRITER --- */
+        const placeholders = ["Search 'Typhlosion'...", "Search 'Rayquaza'...", "Search 'Gengar'..."];
+        let pIndex = 0, charIndex = 0, isDeleting = false;
+        function typeWriter() {
+            const input = document.getElementById('searchInput');
+            if(!input) return;
+            const current = placeholders[pIndex];
+            
+            if (isDeleting) {
+                input.placeholder = current.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                input.placeholder = current.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+            if (!isDeleting && charIndex === current.length) { isDeleting = true; typeSpeed = 2000; }
+            else if (isDeleting && charIndex === 0) { isDeleting = false; pIndex = (pIndex + 1) % placeholders.length; typeSpeed = 500; }
+            
+            setTimeout(typeWriter, typeSpeed);
+        }
+    </script>
+</body>
+</html>
