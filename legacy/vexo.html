@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>VEXO | Fluid Experience</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-oled: #000000;
+            --accent: #2997FF;
+            --accent-glow: rgba(41, 151, 255, 0.4);
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --easing: cubic-bezier(0.16, 1, 0.3, 1);
+            /* Apple-style ease */
+            --font: 'Inter', sans-serif;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-oled);
+            color: var(--text-primary);
+            font-family: var(--font);
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+            cursor: default;
+        }
+
+        /* --- AMBIENT GLOW --- */
+        .ambient-light {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(41, 151, 255, 0.08) 0%, transparent 60%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+            transition: 0.2s cubic-bezier(0.1, 0.5, 0.1, 1);
+            /* Laggy magnetic feel */
+            mix-blend-mode: screen;
+        }
+
+        /* --- UI COMPONENTS --- */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .glass-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: calc(20px + var(--safe-top)) 6% 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.4s var(--easing);
+        }
+
+        .glass-header.scrolled {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: calc(10px + var(--safe-top));
+            padding-bottom: 10px;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 1.6rem;
+            letter-spacing: -1px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Magnetic Button Class */
+        .magnetic-btn {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s var(--easing);
+            cursor: pointer;
+        }
+
+        .magnetic-btn:active {
+            transform: scale(0.92);
+        }
+
+        .search-trigger {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: grid;
+            place-items: center;
+        }
+
+        .search-trigger svg {
+            width: 20px;
+            fill: white;
+        }
+
+        /* --- HERO --- */
+        .hero {
+            height: 85vh;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            padding-bottom: calc(60px + var(--safe-bottom));
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.6;
+            mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+            transition: transform 10s ease-out;
+            z-index: -1;
+        }
+
+        .hero:hover .hero-bg {
+            transform: scale(1.05);
+        }
+
+        .hero-content {
+            padding: 0 6%;
+            width: 100%;
+            max-width: 1000px;
+            z-index: 2;
+        }
+
+        /* Stagger Animations */
+        .reveal-text {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 1s var(--easing) forwards;
+        }
+
+        .reveal-delay-1 {
+            animation-delay: 0.2s;
+        }
+
+        .reveal-delay-2 {
+            animation-delay: 0.4s;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-btn {
+            background: white;
+            color: black;
+            border: none;
+            padding: 16px 36px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transition: 0.3s var(--easing);
+        }
+
+        .hero-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- FEED --- */
+        .section {
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: 0.8s var(--easing);
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-header {
+            padding: 0 6% 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+        }
+
+        .section-header::after {
+            content: '';
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            flex: 1;
+        }
+
+        .scroller {
+            display: flex;
+            gap: 16px;
+            padding: 0 6% 40px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+
+        .card {
+            flex: 0 0 clamp(160px, 40vw, 240px);
+            /* Responsive Width */
+            aspect-ratio: 2/3;
+            position: relative;
+            border-radius: 16px;
+            scroll-snap-align: start;
+            transition: 0.4s var(--easing);
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            transition: 0.4s;
+        }
+
+        /* Sexy Glare Effect */
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            opacity: 0;
+            transition: 0.4s;
+            pointer-events: none;
+            border-radius: 16px;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            z-index: 5;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover img {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        /* --- SHEET (GESTURE ENABLED) --- */
+        .sheet-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.5s;
+        }
+
+        .sheet-backdrop.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 90vh;
+            background: #0A0A0A;
+            border-radius: 32px 32px 0 0;
+            transform: translateY(100%);
+            transition: 0.5s var(--easing);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.5);
+            /* Handle touch */
+            touch-action: none;
+        }
+
+        .sheet-backdrop.active .sheet {
+            transform: translateY(0);
+        }
+
+        .drag-pill {
+            width: 40px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 15px auto;
+            flex-shrink: 0;
+        }
+
+        .sheet-hero {
+            height: 35vh;
+            width: 100%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .sheet-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+        }
+
+        .sheet-content {
+            flex: 1;
+            padding: 0 30px 50px;
+            overflow-y: auto;
+            /* Allow scroll inside sheet */
+            touch-action: pan-y;
+            margin-top: -30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .play-big-btn {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            padding: 18px;
+            border-radius: 20px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px var(--accent-glow);
+            transition: 0.3s;
+        }
+
+        .play-big-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- SEARCH OVERLAY --- */
+        .search-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.4s;
+            padding-top: var(--safe-top);
+        }
+
+        .search-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .search-header {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: #111;
+            border: 1px solid #222;
+            padding: 15px 20px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            color: white;
+            outline: none;
+        }
+
+        .close-txt {
+            color: var(--accent);
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .search-results {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Ambient Glow Orb -->
+    <div id="glow" class="ambient-light"></div>
+
+    <header class="glass-header" id="navbar">
+        <div class="brand magnetic-btn" onclick="app.scrollToTop()">VEXO</div>
+        <div class="search-trigger magnetic-btn" onclick="app.toggleSearch(true)">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
+        </div>
+    </header>
+
+    <div id="hero" class="hero">
+        <div id="hero-bg" class="hero-bg"></div>
+        <div class="hero-content">
+            <div id="hero-tag" class="hero-tag reveal-text">TRENDING #1</div>
+            <h1 id="hero-title" class="hero-title reveal-text reveal-delay-1">Loading...</h1>
+            <button id="hero-play" class="hero-btn magnetic-btn reveal-text reveal-delay-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="black">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+                Watch Trailer
+            </button>
+        </div>
+    </div>
+
+    <main id="app-feed"></main>
+
+    <!-- SHEET -->
+    <div id="sheet-overlay" class="sheet-backdrop" onclick="if(event.target===this) app.closeSheet()">
+        <div id="sheet" class="sheet">
+            <div class="drag-pill"></div>
+            <div class="sheet-hero">
+                <img id="sheet-img" src="">
+                <button onclick="app.closeSheet()"
+                    style="position:absolute; top:20px; right:20px; width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,0.5); color:white; border:none; font-size:1.2rem;">&times;</button>
+            </div>
+            <div class="sheet-content">
+                <h2 id="sheet-title" style="font-size: 2rem; margin-bottom: 10px;">Title</h2>
+                <div style="color:var(--text-secondary); margin-bottom:20px;">
+                    <span id="sheet-year">2024</span> • <span id="sheet-rating">★ 9.0</span>
+                </div>
+                <p id="sheet-desc" style="line-height:1.6; color:#ccc; font-size:1rem;"></p>
+                <button id="sheet-play-btn" class="play-big-btn magnetic-btn">Start Watching</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div id="search-view" class="search-overlay">
+        <div class="search-header">
+            <input type="text" id="search-input" class="search-input" placeholder="Search..." autocomplete="off">
+            <button class="close-txt" onclick="app.toggleSearch(false)">Cancel</button>
+        </div>
+        <div id="search-results" class="search-results"></div>
+    </div>
+
+    <!-- VIDEO PLAYER -->
+    <div id="player-view" style="position:fixed; inset:0; background:black; z-index:1000; display:none;">
+        <button onclick="app.closePlayer()"
+            style="position:absolute; top:30px; left:30px; z-index:1001; padding:10px 20px; border-radius:20px; border:none; background:rgba(255,255,255,0.2); color:white;">Close</button>
+        <iframe id="player-frame" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
+    </div>
+
+    <script>
+        const API = {
+            base: "https://api.themoviedb.org/3",
+            key: "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0MWRiNTg1MGZjYTY1ZDk4NDkxNzYxNjU4OWMxMzcyMiIsIm5iZiI6MTc1ODc0Mjk3Mi4wMTIsInN1YiI6IjY4ZDQ0OWJiY2FiYmYxM2NkYTcxOWNmYiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.y_wbEycxapRlawH-g4BwjBMpeD7Xnb7BFCHmMLuW2ZY",
+            img: "https://image.tmdb.org/t/p/w500",
+            bg: "https://image.tmdb.org/t/p/original",
+            get: async (path) => (await fetch(`${API.base}${path}`, { headers: { Authorization: `Bearer ${API.key}` } })).json()
+        };
+
+        const app = {
+            init: async () => {
+                // Mouse Follow Effect
+                document.addEventListener('mousemove', (e) => {
+                    const glow = document.getElementById('glow');
+                    glow.style.left = e.clientX + 'px';
+                    glow.style.top = e.clientY + 'px';
+                });
+
+                // Navbar Scroll
+                window.addEventListener('scroll', () => {
+                    const nav = document.getElementById('navbar');
+                    if (window.scrollY > 50) nav.classList.add('scrolled');
+                    else nav.classList.remove('scrolled');
+                });
+
+                // Swipe to Close Sheet Logic
+                app.initGestures();
+
+                // Data
+                const [trending, top, action] = await Promise.all([
+                    API.get('/trending/all/day'),
+                    API.get('/movie/top_rated'),
+                    API.get('/discover/movie?with_genres=28')
+                ]);
+
+                app.renderHero(trending.results);
+                app.renderRow("Trending Now", trending.results);
+                app.renderRow("Critics' Choice", top.results);
+                app.renderRow("Action Hits", action.results);
+
+                // Search
+                document.getElementById('search-input').addEventListener('input', (e) => app.search(e.target.value));
+            },
+
+            renderHero: (items) => {
+                const item = items[0];
+                const bg = document.getElementById('hero-bg');
+                const img = new Image();
+                img.src = `${API.bg}${item.backdrop_path}`;
+                img.onload = () => bg.style.backgroundImage = `url('${img.src}')`;
+
+                document.getElementById('hero-title').innerText = item.title || item.name;
+                document.getElementById('hero-play').onclick = () => app.openSheet(item);
+            },
+
+            renderRow: (title, items) => {
+                const feed = document.getElementById('app-feed');
+                const section = document.createElement('div');
+                section.className = 'section';
+                section.innerHTML = `<div class="section-header">${title}</div>`;
+
+                const scroller = document.createElement('div');
+                scroller.className = 'scroller';
+
+                items.forEach(item => {
+                    if (!item.poster_path) return;
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `<img src="${API.img}${item.poster_path}" loading="lazy">`;
+                    card.onclick = () => app.openSheet(item);
+                    scroller.appendChild(card);
+                });
+
+                section.appendChild(scroller);
+                feed.appendChild(section);
+
+                // Observe
+                const observer = new IntersectionObserver((e) => e.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('visible');
+                }), { threshold: 0.1 });
+                observer.observe(section);
+            },
+
+            // --- SHEET & GESTURES ---
+            openSheet: (item) => {
+                document.getElementById('sheet-img').src = `${API.bg}${item.backdrop_path || item.poster_path}`;
+                document.getElementById('sheet-title').innerText = item.title || item.name;
+                document.getElementById('sheet-desc').innerText = item.overview;
+                document.getElementById('sheet-year').innerText = (item.release_date || item.first_air_date || '').slice(0, 4);
+                document.getElementById('sheet-rating').innerText = `★ ${item.vote_average.toFixed(1)}`;
+
+                document.getElementById('sheet-play-btn').onclick = () => {
+                    app.closeSheet();
+                    app.play(item);
+                };
+
+                document.getElementById('sheet-overlay').classList.add('active');
+            },
+
+            closeSheet: () => {
+                const sheet = document.getElementById('sheet');
+                sheet.style.transform = ''; // Clear gesture transforms
+                document.getElementById('sheet-overlay').classList.remove('active');
+            },
+
+            initGestures: () => {
+                const sheet = document.getElementById('sheet');
+                let startY = 0;
+                let currentY = 0;
+
+                sheet.addEventListener('touchstart', (e) => {
+                    startY = e.touches[0].clientY;
+                    // Reset transition for direct drag
+                    sheet.style.transition = 'none';
+                }, { passive: true });
+
+                sheet.addEventListener('touchmove', (e) => {
+                    currentY = e.touches[0].clientY;
+                    const delta = currentY - startY;
+                    if (delta > 0 && sheet.scrollTop <= 0) {
+                        e.preventDefault(); // Prevent scroll if we're dragging down
+                        sheet.style.transform = `translateY(${delta}px)`;
+                    }
+                }, { passive: false });
+
+                sheet.addEventListener('touchend', (e) => {
+                    const delta = currentY - startY;
+                    sheet.style.transition = '0.5s var(--easing)'; // Restore transition
+                    if (delta > 150) {
+                        app.closeSheet(); // Swipe down to close
+                    } else {
+                        sheet.style.transform = `translateY(0)`; // Snap back
+                    }
+                });
+            },
+
+            // --- SEARCH & PLAYER ---
+            toggleSearch: (show) => {
+                const view = document.getElementById('search-view');
+                if (show) {
+                    view.classList.add('active');
+                    document.getElementById('search-input').focus();
+                } else {
+                    view.classList.remove('active');
+                    document.getElementById('search-input').value = '';
+                    document.getElementById('search-results').innerHTML = '';
+                }
+            },
+
+            search: async (query) => {
+                if (query.length < 2) return;
+                const data = await API.get(`/search/multi?query=${encodeURIComponent(query)}`);
+                const grid = document.getElementById('search-results');
+                grid.innerHTML = '';
+                data.results.forEach(item => {
+                    if (!item.poster_path) return;
+                    const div = document.createElement('div');
+                    div.className = 'card'; // Reuse style
+                    div.innerHTML = `<img src="${API.img}${item.poster_path}" style="width:100%; border-radius:12px;">`;
+                    div.onclick = () => app.openSheet(item);
+                    grid.appendChild(div);
+                });
+            },
+
+            play: (item) => {
+                const isTv = item.media_type === 'tv' || item.first_air_date;
+                const type = isTv ? 'tv' : 'movie';
+                let url = `https://www.vidking.net/embed/${type}/${item.id}`;
+                if (isTv) url += "/1/1";
+                document.getElementById('player-frame').src = url;
+                document.getElementById('player-view').style.display = 'block';
+            },
+
+            closePlayer: () => {
+                document.getElementById('player-view').style.display = 'none';
+                document.getElementById('player-frame').src = '';
+            },
+
+            scrollToTop: () => window.scrollTo({ top: 0, behavior: 'smooth' })
+        };
+
+        app.init();
+    </script>
+</body>
+
+</html>
