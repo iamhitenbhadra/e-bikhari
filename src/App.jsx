@@ -1,8 +1,9 @@
-import { Suspense, lazy } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import AmbientLight from './components/AmbientLight';
+import SearchModal from './components/SearchModal';
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -11,11 +12,19 @@ const Watch = lazy(() => import('./pages/Watch'));
 
 function App() {
     const location = useLocation();
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     return (
         <>
             <AmbientLight />
-            {location.pathname !== '/search' && !location.pathname.includes('/watch') && <Navbar />}
+
+            {/* Navbar with Search Trigger */}
+            {location.pathname !== '/search' && !location.pathname.includes('/watch') && (
+                <Navbar onOpenSearch={() => setIsSearchOpen(true)} />
+            )}
+
+            {/* Global Search Modal */}
+            <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
             <div className="min-h-screen bg-black">
                 <AnimatePresence mode="wait">
