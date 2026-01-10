@@ -22,14 +22,12 @@ const Home = () => {
 
             {/* 
               Content Rows 
-              -mt-32 pulls the rows UP into the Hero's bottom gradient.
-              The Hero content has pb-60, creating a large buffer zone.
-              z-30 ensures rows are clickable and sit on top of the hero fade.
+              Standard Netflix layout: Rows start overlapping the bottom fade of the billboard slightly.
             */}
-            <div className="relative z-30 -mt-16 md:-mt-24 space-y-8">
+            <div className="relative z-20 -mt-32 md:-mt-48 space-y-8 pl-4 md:pl-12 pb-20">
                 <MediaRow title="Trending Now" queryKey="trending" queryFn={api.getTrending} />
                 <MediaRow title="Top Rated" queryKey="topRated" queryFn={api.getTopRated} />
-                <MediaRow title="Action Hits" queryKey="action" queryFn={api.getActionMovies} />
+                <MediaRow title="Action Movies" queryKey="action" queryFn={api.getActionMovies} />
             </div>
         </div>
     );

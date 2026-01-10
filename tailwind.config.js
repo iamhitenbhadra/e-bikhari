@@ -7,9 +7,11 @@ export default {
     theme: {
         extend: {
             colors: {
-                'accent': '#2997FF', // Porting your custom accent color
+                'netflix-red': '#E50914',
+                'netflix-black': '#141414',
+                'netflix-gray': '#e5e5e5',
             }
-        },
+        }
     },
     plugins: [],
 }

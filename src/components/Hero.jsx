@@ -1,55 +1,65 @@
-import { motion } from 'framer-motion';
-import { BACKDROP_BASE } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { BACKDROP_BASE } from '../services/api';
 
 const Hero = ({ item }) => {
     const navigate = useNavigate();
     if (!item) return null;
 
     return (
-        <div className="relative w-full h-[95vh] overflow-hidden">
-            {/* Background Image - Fixed/Absolute Layer */}
-            <div className="absolute inset-0 z-0">
+        <div className="relative h-[90vh] w-full">
+            {/* Background Layer */}
+            <div className="absolute inset-0">
                 <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-out hover:scale-105"
+                    className="absolute inset-0 bg-cover bg-center"
                     style={{ backgroundImage: `url(${BACKDROP_BASE}${item.backdrop_path})` }}
-                />
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-transparent to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
+                </div>
             </div>
 
-            {/* Gradient Overlays for Readability */}
-            <div className="absolute inset-x-0 bottom-0 h-[60vh] bg-gradient-to-t from-[#000000] via-black/60 to-transparent z-10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent z-10" />
-
-            {/* Content Layer - Adjusted for safety */}
-            <div className="relative z-20 h-full flex flex-col justify-end px-[6%] pb-20 md:pb-32 pt-24">
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="max-w-4xl"
-                >
-                    <div className="inline-block px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-semibold mb-6 text-white/90">
-                        TRENDING #1
-                    </div>
-
-                    <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-[1.1] tracking-tight drop-shadow-2xl">
+            {/* Content Layer */}
+            <div className="relative z-10 h-full flex items-center px-[4%] pt-[80px]">
+                <div className="max-w-xl md:max-w-2xl space-y-6">
+                    {/* Title */}
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter drop-shadow-lg text-white">
                         {item.title || item.name}
                     </h1>
 
-                    <p className="text-white/80 text-lg md:text-xl max-w-2xl mb-10 line-clamp-3">
+                    {/* Metadata (Simulated) */}
+                    <div className="flex items-center gap-4 text-green-400 font-bold text-lg">
+                        <span>98% Match</span>
+                        <span className="text-gray-300 font-normal">{(item.release_date || item.first_air_date || '').slice(0, 4)}</span>
+                        <span className="border border-gray-500 px-1 text-xs text-white rounded font-normal">HD</span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-white text-lg md:text-xl drop-shadow-md line-clamp-3 w-[90%]">
                         {item.overview}
                     </p>
 
-                    <button
-                        onClick={() => navigate(`/watch/${item.media_type || 'movie'}/${item.id}`)}
-                        className="bg-white text-black px-10 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)]"
-                    >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="black">
-                            <path d="M8 5v14l11-7z" />
-                        </svg>
-                        Watch Now
-                    </button>
-                </motion.div>
+                    {/* Buttons */}
+                    <div className="flex items-center gap-4 pt-4">
+                        <button
+                            onClick={() => navigate(`/watch/${item.media_type || 'movie'}/${item.id}`)}
+                            className="flex items-center gap-3 bg-white text-black px-8 py-3 rounded hover:bg-white/90 transition font-bold text-xl"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Play
+                        </button>
+
+                        <button className="flex items-center gap-3 bg-[rgba(109,109,110,0.7)] text-white px-8 py-3 rounded hover:bg-[rgba(109,109,110,0.4)] transition font-bold text-xl backdrop-blur-sm">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            More Info
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
