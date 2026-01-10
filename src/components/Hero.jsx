@@ -20,8 +20,8 @@ const Hero = ({ item }) => {
             <div className="absolute inset-x-0 bottom-0 h-[60vh] bg-gradient-to-t from-[#000000] via-black/60 to-transparent z-10" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent z-10" />
 
-            {/* Content Layer - Pushed up significantly */}
-            <div className="relative z-20 h-full flex flex-col justify-end px-[6%] pb-48 md:pb-60">
+            {/* Content Layer - Adjusted for safety */}
+            <div className="relative z-20 h-full flex flex-col justify-end px-[6%] pb-20 md:pb-32 pt-24">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
