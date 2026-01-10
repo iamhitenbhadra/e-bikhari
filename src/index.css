@@ -1,32 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --bg-oled: #000000;
   --accent: #2997FF;
   --accent-glow: rgba(41, 151, 255, 0.4);
   --text-primary: #FFFFFF;
   --text-secondary: rgba(255, 255, 255, 0.7);
-  --easing: cubic-bezier(0.16, 1, 0.3, 1); /* Apple-style ease */
+  --easing: cubic-bezier(0.16, 1, 0.3, 1);
   --font: 'Inter', sans-serif;
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
 body {
+  @apply bg-black text-white antialiased font-sans;
   background-color: var(--bg-oled);
-  color: var(--text-primary);
   font-family: var(--font);
   overflow-x: hidden;
-  width: 100%;
-  height: 100%;
-  cursor: default;
 }
 
-::-webkit-scrollbar {
+/* Custom scrollbar hiding */
+.scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
