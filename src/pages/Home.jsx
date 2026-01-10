@@ -9,13 +9,24 @@ const Home = () => {
         queryFn: api.getTrending
     });
 
-    if (isLoading) return <div className="h-screen grid place-items-center">Loading...</div>;
+    if (isLoading) return <div className="h-screen bg-black grid place-items-center">
+        <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+    </div>;
+
+    const heroItem = trending?.results[0];
 
     return (
-        <div className="min-h-screen pb-20">
-            <Hero item={trending?.results[0]} />
+        <div className="min-h-screen bg-black pb-20">
+            {/* Hero Section */}
+            <Hero item={heroItem} />
 
-            <div className="relative z-20 -mt-16">
+            {/* 
+              Content Rows 
+              -mt-32 pulls the rows UP into the Hero's bottom gradient.
+              The Hero content has pb-60, creating a large buffer zone.
+              z-30 ensures rows are clickable and sit on top of the hero fade.
+            */}
+            <div className="relative z-30 -mt-24 md:-mt-32 space-y-8">
                 <MediaRow title="Trending Now" queryKey="trending" queryFn={api.getTrending} />
                 <MediaRow title="Top Rated" queryKey="topRated" queryFn={api.getTopRated} />
                 <MediaRow title="Action Hits" queryKey="action" queryFn={api.getActionMovies} />

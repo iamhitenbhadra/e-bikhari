@@ -7,47 +7,49 @@ const Hero = ({ item }) => {
     if (!item) return null;
 
     return (
-        <div className="relative h-[85vh] w-full flex items-end pb-32 md:pb-40 overflow-hidden group">
-            {/* Background */}
-            <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-out group-hover:scale-105"
-                style={{ backgroundImage: `url(${BACKDROP_BASE}${item.backdrop_path})` }}
-            />
-            {/* Enhanced Gradient for readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+        <div className="relative w-full h-[95vh] overflow-hidden">
+            {/* Background Image - Fixed/Absolute Layer */}
+            <div className="absolute inset-0 z-0">
+                <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-out hover:scale-105"
+                    style={{ backgroundImage: `url(${BACKDROP_BASE}${item.backdrop_path})` }}
+                />
+            </div>
 
-            {/* Content */}
-            <div className="relative z-10 px-[6%] w-full max-w-5xl">
+            {/* Gradient Overlays for Readability */}
+            <div className="absolute inset-x-0 bottom-0 h-[60vh] bg-gradient-to-t from-[#000000] via-black/60 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent z-10" />
+
+            {/* Content Layer - Pushed up significantly */}
+            <div className="relative z-20 h-full flex flex-col justify-end px-[6%] pb-48 md:pb-60">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="inline-block px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-semibold mb-4"
+                    transition={{ duration: 0.6 }}
+                    className="max-w-4xl"
                 >
-                    TRENDING #1
+                    <div className="inline-block px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-semibold mb-6 text-white/90">
+                        TRENDING #1
+                    </div>
+
+                    <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-[1.1] tracking-tight drop-shadow-2xl">
+                        {item.title || item.name}
+                    </h1>
+
+                    <p className="text-white/80 text-lg md:text-xl max-w-2xl mb-10 line-clamp-3">
+                        {item.overview}
+                    </p>
+
+                    <button
+                        onClick={() => navigate(`/watch/${item.media_type || 'movie'}/${item.id}`)}
+                        className="bg-white text-black px-10 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)]"
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="black">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                        Watch Now
+                    </button>
                 </motion.div>
-
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight drop-shadow-2xl"
-                >
-                    {item.title || item.name}
-                </motion.h1>
-
-                <motion.button
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    onClick={() => navigate(`/watch/${item.media_type || 'movie'}/${item.id}`)}
-                    className="bg-white text-black px-8 py-4 rounded-full font-bold text-lg flex items-center gap-3 hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)]"
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="black">
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
-                    Watch Now
-                </motion.button>
             </div>
         </div>
     );
