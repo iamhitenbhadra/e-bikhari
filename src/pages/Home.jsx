@@ -15,7 +15,7 @@ const Home = () => {
         <div className="min-h-screen pb-20">
             <Hero item={trending?.results[0]} />
 
-            <div className="relative z-20 -mt-32">
+            <div className="relative z-20 -mt-16">
                 <MediaRow title="Trending Now" queryKey="trending" queryFn={api.getTrending} />
                 <MediaRow title="Top Rated" queryKey="topRated" queryFn={api.getTopRated} />
                 <MediaRow title="Action Hits" queryKey="action" queryFn={api.getActionMovies} />

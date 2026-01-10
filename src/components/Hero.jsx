@@ -7,13 +7,15 @@ const Hero = ({ item }) => {
     if (!item) return null;
 
     return (
-        <div className="relative h-[85vh] w-full flex items-end pb-[calc(60px+env(safe-area-inset-bottom))] overflow-hidden group">
+        <div className="relative h-[85vh] w-full flex items-end pb-32 md:pb-40 overflow-hidden group">
             {/* Background */}
             <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-out group-hover:scale-105"
                 style={{ backgroundImage: `url(${BACKDROP_BASE}${item.backdrop_path})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black" />
+            {/* Enhanced Gradient for readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
 
             {/* Content */}
             <div className="relative z-10 px-[6%] w-full max-w-5xl">
