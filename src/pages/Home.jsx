@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api';
-import Hero from '../components/Hero';
-import MediaRow from '../components/MediaRow';
+import SpotlightHero from '../components/SpotlightHero';
+import MasonryGrid from '../components/MasonryGrid';
 
 const Home = () => {
     // Fetch Trending for Sidebar/Hero
