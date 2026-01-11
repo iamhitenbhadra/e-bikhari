@@ -7,15 +7,16 @@ const Hero = ({ item }) => {
 
     return (
         <div className="relative h-[90vh] w-full">
-            {/* Background Layer */}
+            {/* Background Layer - Optimized for LCP */}
             <div className="absolute inset-0">
-                <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${BACKDROP_BASE}${item.backdrop_path})` }}
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-transparent to-transparent opacity-90" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
-                </div>
+                <img
+                    src={`${BACKDROP_BASE}${item.backdrop_path}`}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                    fetchPriority="high"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-transparent to-transparent opacity-90" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
             </div>
 
             {/* Content Layer */}

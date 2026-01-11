@@ -24,9 +24,9 @@ const Navbar = ({ onOpenSearch }) => {
                 } h-[68px]`}
         >
             <div className="flex items-center gap-8">
-                {/* Netflix Logo (Text replacement for now) */}
-                <Link to="/" className="text-[#E50914] text-2xl md:text-3xl font-bold tracking-tighter uppercase mr-4">
-                    NETFLIX
+                {/* Brand Logo */}
+                <Link to="/" className="text-[#E50914] text-3xl font-black tracking-tighter cursor-pointer">
+                    VEXO
                 </Link>
 
                 {/* Primary Navigation - Desktop */}
