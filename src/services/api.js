@@ -1,4 +1,4 @@
-const API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0MWRiNTg1MGZjYTY1ZDk4NDkxNzYxNjU4OWMxMzcyMiIsIm5iZiI6MTc1ODc0Mjk3Mi4wMTIsInN1YiI6IjY4ZDQ0OWJiY2FiYmYxM2NkYTcxOWNmYiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.y_wbEycxapRlawH-g4BwjBMpeD7Xnb7BFCHmMLuW2ZY";
+const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
 
 export const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
@@ -16,12 +16,14 @@ const fetchTMDB = async (endpoint) => {
 };
 
 export const api = {
-    getTrending: () => fetchTMDB("/trending/all/day"),
-    getTopRated: () => fetchTMDB("/movie/top_rated"),
-    getActionMovies: () => fetchTMDB("/discover/movie?with_genres=28"),
-    getByGenre: (genreId) => fetchTMDB(`/discover/movie?with_genres=${genreId}`),
+    getTrending: (page = 1) => fetchTMDB(`/trending/all/day?page=${page}`),
+    getTopRated: (page = 1) => fetchTMDB(`/movie/top_rated?page=${page}`),
+    getActionMovies: (page = 1) => fetchTMDB(`/discover/movie?with_genres=28&page=${page}`),
+    getByGenre: (genreId, page = 1) => fetchTMDB(`/discover/movie?with_genres=${genreId}&page=${page}`),
     getDetails: (type, id) => fetchTMDB(`/${type}/${id}`),
-    search: (query) => fetchTMDB(`/search/multi?query=${encodeURIComponent(query)}`),
-    getSimilar: (type, id) => fetchTMDB(`/${type}/${id}/similar`),
-    getRecommended: (type, id) => fetchTMDB(`/${type}/${id}/recommendations`),
+    search: (query, page = 1) => fetchTMDB(`/search/multi?query=${encodeURIComponent(query)}&page=${page}`),
+    getSimilar: (type, id, page = 1) => fetchTMDB(`/${type}/${id}/similar?page=${page}`),
+    getRecommended: (type, id, page = 1) => fetchTMDB(`/${type}/${id}/recommendations?page=${page}`),
+    getVideos: (type, id) => fetchTMDB(`/${type}/${id}/videos`),
+    getCredits: (type, id) => fetchTMDB(`/${type}/${id}/credits`),
 };

@@ -18,10 +18,14 @@ export default {
                 shine: {
                     '0%': { left: '-150%' },
                     '100%': { left: '150%' }
+                },
+                shimmer: {
+                    '100%': { transform: 'translateX(100%)' },
                 }
             },
             animation: {
                 shine: 'shine 0.8s ease-out forwards',
+                shimmer: 'shimmer 1.5s infinite',
             }
         }
     },

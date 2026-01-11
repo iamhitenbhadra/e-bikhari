@@ -4,17 +4,25 @@ import { api, BACKDROP_BASE, IMAGE_BASE } from '../services/api';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useRef } from 'react';
 import MasonryGrid from '../components/MasonryGrid';
+import { useWatchlist } from '../hooks/useWatchlist';
 
 const Watch = () => {
     const { type, id } = useParams();
     const navigate = useNavigate();
     const [isPlaying, setIsPlaying] = useState(false);
     const containerRef = useRef(null);
+    const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
 
-    // Fetch Details
+    // Fetch Details & Credits
     const { data: item, isLoading } = useQuery({
         queryKey: ['details', type, id],
         queryFn: () => api.getDetails(type, id)
+    });
+
+    // Fetch Credits
+    const { data: credits } = useQuery({
+        queryKey: ['credits', type, id],
+        queryFn: () => api.getCredits(type, id)
     });
 
     // Parallax logic
@@ -27,6 +35,9 @@ const Watch = () => {
     const embedUrl = type === 'tv'
         ? `https://www.vidking.net/embed/tv/${id}/1/1`
         : `https://www.vidking.net/embed/movie/${id}`;
+
+    const inList = item ? isInWatchlist(item.id) : false;
+    const cast = credits?.cast?.slice(0, 10) || [];
 
     return (
         <div ref={containerRef} className="relative min-h-screen bg-[#0a0a0a] text-white w-full overflow-hidden">
@@ -111,6 +122,7 @@ const Watch = () => {
                                 </div>
                                 <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
                                 <span>{(item.release_date || item.first_air_date || '').slice(0, 4)}</span>
+                                {/* Runtime Logic */}
                                 {item.runtime > 0 && (
                                     <>
                                         <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
@@ -123,17 +135,63 @@ const Watch = () => {
                                 {item.overview}
                             </p>
 
-                            <button
-                                onClick={() => setIsPlaying(true)}
-                                className="group relative px-10 py-5 bg-white text-black rounded-full font-bold text-xl flex items-center gap-3 hover:scale-105 transition-transform shadow-[0_0_50px_-10px_rgba(255,255,255,0.4)]"
-                            >
-                                <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center group-hover:bg-[#2997FF] transition-colors">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="ml-1">
-                                        <path d="M8 5v14l11-7z" />
+                            <div className="flex flex-wrap gap-4">
+                                <button
+                                    onClick={() => setIsPlaying(true)}
+                                    className="group relative px-10 py-5 bg-white text-black rounded-full font-bold text-xl flex items-center gap-3 hover:scale-105 transition-transform shadow-[0_0_50px_-10px_rgba(255,255,255,0.4)]"
+                                >
+                                    <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center group-hover:bg-[#2997FF] transition-colors">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="ml-1">
+                                            <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                    </div>
+                                    <span>Watch Now</span>
+                                </button>
+
+                                <button
+                                    onClick={() => inList ? removeFromWatchlist(item.id) : addToWatchlist(item)}
+                                    className={`px-8 py-5 rounded-full font-bold text-lg flex items-center gap-3 transition-all border ${inList
+                                        ? 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                                        : 'bg-transparent border-white/20 text-white hover:bg-white/5'
+                                        }`}
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill={inList ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                     </svg>
+                                    <span>{inList ? 'Added' : 'Add to List'}</span>
+                                </button>
+                            </div>
+
+                            {/* Cast List */}
+                            {cast.length > 0 && (
+                                <div className="pt-8 border-t border-white/10">
+                                    <h3 className="text-white/50 text-xs font-bold uppercase tracking-widest mb-4">Starring</h3>
+                                    <div className="flex flex-wrap gap-4">
+                                        {cast.map(c => (
+                                            <div key={c.id} className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/5 hover:bg-white/10 transition-colors">
+                                                {c.profile_path ? (
+                                                    <img src={`${IMAGE_BASE}${c.profile_path}`} className="w-8 h-8 rounded-full object-cover" alt={c.name} />
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs">?</div>
+                                                )}
+                                                <span className="text-sm font-medium text-white/90">{c.name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                                <span>Watch Now</span>
-                            </button>
+                            )}
+
+                            {/* Production Info (New Feature) */}
+                            {item.production_companies?.length > 0 && (
+                                <div className="pt-6">
+                                    <div className="flex flex-wrap gap-6 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+                                        {item.production_companies.filter(c => c.logo_path).slice(0, 3).map(c => (
+                                            <img key={c.id} src={`${IMAGE_BASE}${c.logo_path}`} alt={c.name} className="h-6 object-contain invert" />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                         </motion.div>
 
                         {/* Right: Poster (Desktop Only) */}

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Dock from './components/Dock';
@@ -10,6 +10,18 @@ const Watch = lazy(() => import('./pages/Watch'));
 
 function App() {
     const location = useLocation();
+
+    // Fade out initial loader on mount
+    useEffect(() => {
+        const loader = document.querySelector('.initial-loader');
+        if (loader) {
+            // Small delay to ensure the app is actually painted
+            requestAnimationFrame(() => {
+                loader.classList.add('fade-out');
+                setTimeout(() => loader.remove(), 600); // Remove from DOM after transition
+            });
+        }
+    }, []);
 
     return (
         <>
@@ -23,8 +35,12 @@ function App() {
             <div className="min-h-screen bg-[#0a0a0a]">
                 <AnimatePresence mode="wait">
                     <Suspense fallback={
-                        <div className="h-screen w-full grid place-items-center bg-[#0a0a0a] text-white/50">
-                            Loading...
+                        <div className="h-screen w-full flex flex-col items-center justify-center bg-[#0a0a0a]">
+                            <div className="w-[60px] h-[60px] bg-white rounded-full animate-[ping_1.5s_ease-in-out_infinite] opacity-20 relative">
+                                <div className="absolute inset-0 bg-white rounded-full blur-xl opacity-50"></div>
+                            </div>
+                            {/* Matching the index.html vibe but using Tailwind */}
+                            <div className="absolute w-[60px] h-[60px] bg-white rounded-full opacity-80 animate-pulse shadow-[0_0_30px_rgba(255,255,255,0.4)]"></div>
                         </div>
                     }>
                         <Routes location={location} key={location.pathname}>
