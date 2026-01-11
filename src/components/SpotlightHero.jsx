@@ -1,15 +1,22 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { BACKDROP_BASE } from '../services/api';
 
 const SpotlightHero = ({ item }) => {
     const navigate = useNavigate();
+    const { scrollY } = useScroll();
+    const y = useTransform(scrollY, [0, 500], [0, 200]);
+    const opacity = useTransform(scrollY, [0, 400], [1, 0]);
+
     if (!item) return null;
 
     return (
         <div className="relative h-[85vh] w-full flex items-end justify-center pb-20 overflow-hidden group">
-            {/* Immersive Background */}
-            <div className="absolute inset-0 z-0">
+            {/* Immersive Background with Parallax */}
+            <motion.div
+                style={{ y, opacity }}
+                className="absolute inset-0 z-0"
+            >
                 <img
                     src={`${BACKDROP_BASE}${item.backdrop_path}`}
                     alt={item.title}
@@ -18,7 +25,7 @@ const SpotlightHero = ({ item }) => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
                 <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
-            </div>
+            </motion.div>
 
             {/* Centered Content */}
             <div className="relative z-10 text-center max-w-4xl px-6 space-y-6">
@@ -30,10 +37,10 @@ const SpotlightHero = ({ item }) => {
                     <span className="inline-block py-1 px-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-xs font-medium text-white/80 mb-4 tracking-wider uppercase">
                         Spotlight Selection
                     </span>
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white drop-shadow-2xl mb-4 leading-[0.9]">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter text-white drop-shadow-2xl mb-4 leading-[0.9] will-change-transform">
                         {item.title || item.name}
                     </h1>
-                    <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto line-clamp-2 leading-relaxed">
+                    <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto line-clamp-2 leading-relaxed">
                         {item.overview}
                     </p>
                 </motion.div>
@@ -53,9 +60,7 @@ const SpotlightHero = ({ item }) => {
                         </svg>
                         Play Now
                     </button>
-                    <button className="px-8 py-4 bg-white/10 text-white border border-white/10 rounded-full font-bold text-lg hover:bg-white/20 transition-colors backdrop-blur-md">
-                        Details
-                    </button>
+                    {/* Details button removed as requested */}
                 </motion.div>
             </div>
         </div>

@@ -19,6 +19,9 @@ export const api = {
     getTrending: () => fetchTMDB("/trending/all/day"),
     getTopRated: () => fetchTMDB("/movie/top_rated"),
     getActionMovies: () => fetchTMDB("/discover/movie?with_genres=28"),
+    getByGenre: (genreId) => fetchTMDB(`/discover/movie?with_genres=${genreId}`),
     getDetails: (type, id) => fetchTMDB(`/${type}/${id}`),
     search: (query) => fetchTMDB(`/search/multi?query=${encodeURIComponent(query)}`),
+    getSimilar: (type, id) => fetchTMDB(`/${type}/${id}/similar`),
+    getRecommended: (type, id) => fetchTMDB(`/${type}/${id}/recommendations`),
 };

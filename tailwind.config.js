@@ -13,6 +13,15 @@ export default {
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
+            },
+            keyframes: {
+                shine: {
+                    '0%': { left: '-150%' },
+                    '100%': { left: '150%' }
+                }
+            },
+            animation: {
+                shine: 'shine 0.8s ease-out forwards',
             }
         }
     },
