@@ -8,46 +8,14 @@ import NetworkError from './NetworkError';
 
 const MasonryGrid = ({ title, queryKey, queryFn }) => {
     const navigate = useNavigate();
-
-    // Switch to Infinite Query
-    const {
-        data,
-        isLoading,
-        isError,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        refetch
-    } = useInfiniteQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: [queryKey],
-        // The queryFn now receives { pageParam = 1 }
-        queryFn: ({ pageParam = 1 }) => queryFn(pageParam),
-        getNextPageParam: (lastPage) => {
-            // TMDB returns 'page' and 'total_pages'
-            return lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined;
-        }
+        queryFn,
+        retry: 1
     });
-
-    // Observer for Infinite Scroll
-    const observerRef = useRef();
-    const lastElementRef = useRef();
-
-    useEffect(() => {
-        if (isLoading) return;
-        if (observerRef.current) observerRef.current.disconnect();
-
-        observerRef.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        });
-
-        if (lastElementRef.current) {
-            observerRef.current.observe(lastElementRef.current);
-        }
-    }, [isLoading, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
     const ref = useRef(null);
+
+    // Subtle parallax for grid items
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
     const y = useTransform(scrollYProgress, [0, 1], [50, -50]);
 
@@ -104,7 +72,7 @@ const MasonryGrid = ({ title, queryKey, queryFn }) => {
                 {items.map((item, index) => (
                     item.poster_path && (
                         <motion.div
-                            key={`${item.id}-${index}`} // Unique key for duplicates just in case
+                            key={item.id}
                             initial={{ opacity: 0, scale: 0.95 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             whileHover={{ y: -10, scale: 1.05 }}
@@ -155,8 +123,6 @@ const MasonryGrid = ({ title, queryKey, queryFn }) => {
                     )
                 ))}
             </div>
-
-
         </section>
     );
 };

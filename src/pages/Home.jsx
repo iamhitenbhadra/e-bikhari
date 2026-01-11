@@ -16,7 +16,7 @@ const Home = () => {
     // Fetch Trending for Sidebar/Hero
     const { data: trending, isError: isHeroError, isLoading: isHeroLoading, refetch: refetchHero } = useQuery({
         queryKey: ['trending'],
-        queryFn: api.getTrending,
+        queryFn: () => api.getTrending(1),
         retry: 1
     });
     const heroItem = trending?.results?.[0];
@@ -85,9 +85,9 @@ const Home = () => {
                                 queryFn={() => Promise.resolve({ results: watchlist })}
                             />
                         )}
-                        <MasonryGrid title="Trending Now" queryKey="trending" queryFn={api.getTrending} />
-                        <MasonryGrid title="Top Rated" queryKey="topRated" queryFn={api.getTopRated} />
-                        <MasonryGrid title="Action Collection" queryKey="action" queryFn={api.getActionMovies} />
+                        <MasonryGrid title="Trending Now" queryKey="trending" queryFn={() => api.getTrending(1)} />
+                        <MasonryGrid title="Top Rated" queryKey="topRated" queryFn={() => api.getTopRated(1)} />
+                        <MasonryGrid title="Action Collection" queryKey="action" queryFn={() => api.getActionMovies(1)} />
                     </div>
                 </>
             ) : genreId ? (
@@ -118,7 +118,7 @@ const Home = () => {
                     <MasonryGrid
                         title={`Top ${genreName}`}
                         queryKey={`genre-${genreId}`}
-                        queryFn={() => api.getByGenre(genreId)}
+                        queryFn={() => api.getByGenre(genreId, 1)}
                     />
                 </div>
             ) : (
@@ -127,7 +127,7 @@ const Home = () => {
                     <MasonryGrid
                         title={`Results for "${query}"`}
                         queryKey={`search-${query}`}
-                        queryFn={() => api.search(query)}
+                        queryFn={() => api.search(query, 1)}
                     />
                 </div>
             )}
