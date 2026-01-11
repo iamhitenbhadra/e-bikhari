@@ -108,8 +108,8 @@ const SpotlightHero = ({ item }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 >
-                    <span className="inline-block py-1 px-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-[10px] md:text-xs font-medium text-white/80 mb-3 md:mb-4 tracking-wider uppercase">
-                        Spotlight Selection
+                    <span className="inline-block py-1.5 px-4 rounded-full border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-md text-[10px] md:text-xs font-bold text-yellow-400 mb-4 md:mb-6 tracking-widest uppercase shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+                        ★ Spotlight Selection
                     </span>
                     <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter text-white drop-shadow-2xl mb-4 leading-[0.95] md:leading-[0.9]">
                         {item.title || item.name}

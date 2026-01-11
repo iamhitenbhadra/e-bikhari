@@ -14,7 +14,7 @@ const Home = () => {
     const { watchlist } = useWatchlist(); // Get watchlist
 
     // Fetch Trending for Sidebar/Hero
-    const { data: trending, isError: isHeroError, refetch: refetchHero } = useQuery({
+    const { data: trending, isError: isHeroError, isLoading: isHeroLoading, refetch: refetchHero } = useQuery({
         queryKey: ['trending'],
         queryFn: api.getTrending,
         retry: 1
@@ -50,8 +50,14 @@ const Home = () => {
                 // Standard Home Feed
                 <>
                     {isHeroError ? (
-                        <div className="pt-20 px-4">
+                        <div className="h-[85vh] w-full flex items-center justify-center">
                             <NetworkError onRetry={refetchHero} />
+                        </div>
+                    ) : isHeroLoading ? (
+                        // Hero Skeleton
+                        <div className="relative h-[85vh] w-full bg-[#0a0a0a] overflow-hidden">
+                            <div className="absolute inset-0 animate-pulse bg-white/5" />
+                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
                         </div>
                     ) : (
                         <SpotlightHero item={heroItem} />

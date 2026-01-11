@@ -1,5 +1,5 @@
-import { useRef, useEffect } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { IMAGE_BASE } from '../services/api';
@@ -73,8 +73,7 @@ const MasonryGrid = ({ title, queryKey, queryFn }) => {
         );
     }
 
-    // Flatten pages
-    const items = data?.pages.flatMap(page => page.results) || [];
+    const items = data?.results || [];
 
     if (items.length === 0) {
         return (
@@ -157,17 +156,7 @@ const MasonryGrid = ({ title, queryKey, queryFn }) => {
                 ))}
             </div>
 
-            {/* sentinel element for infinite scroll */}
-            <div ref={lastElementRef} className="h-20 w-full flex items-center justify-center mt-12">
-                {isFetchingNextPage && (
-                    <div className="flex items-center gap-2 text-white/50 text-sm">
-                        <div className="w-2 h-2 rounded-full bg-white animate-bounce" />
-                        <div className="w-2 h-2 rounded-full bg-white animate-bounce [animation-delay:-.1s]" />
-                        <div className="w-2 h-2 rounded-full bg-white animate-bounce [animation-delay:-.2s]" />
-                        Loading more...
-                    </div>
-                )}
-            </div>
+
         </section>
     );
 };
