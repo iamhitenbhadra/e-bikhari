@@ -1,42 +1,34 @@
-import { useState, Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import Navbar from './components/Navbar'; // Keep for now or remove if unused
 import Dock from './components/Dock';
 import AmbientLight from './components/AmbientLight';
-import SearchModal from './components/SearchModal';
 
-// Lazy load pages for code splitting
+// Lazy load pages
 const Home = lazy(() => import('./pages/Home'));
-const Search = lazy(() => import('./pages/Search'));
 const Watch = lazy(() => import('./pages/Watch'));
 
 function App() {
     const location = useLocation();
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     return (
         <>
             <AmbientLight />
 
-            {/* New Floating Dock Navigation */}
-            {location.pathname !== '/search' && !location.pathname.includes('/watch') && (
-                <Dock onOpenSearch={() => setIsSearchOpen(true)} />
+            {/* Dock Navigation */}
+            {!location.pathname.includes('/watch') && (
+                <Dock />
             )}
 
-            {/* Global Search Modal */}
-            <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-
-            <div className="min-h-screen bg-black">
+            <div className="min-h-screen bg-[#0a0a0a]">
                 <AnimatePresence mode="wait">
                     <Suspense fallback={
-                        <div className="h-screen w-full grid place-items-center bg-black text-white/50">
+                        <div className="h-screen w-full grid place-items-center bg-[#0a0a0a] text-white/50">
                             Loading...
                         </div>
                     }>
                         <Routes location={location} key={location.pathname}>
                             <Route path="/" element={<Home />} />
-                            <Route path="/search" element={<Search />} />
                             <Route path="/watch/:type/:id" element={<Watch />} />
                         </Routes>
                     </Suspense>
