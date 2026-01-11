@@ -1,7 +1,8 @@
 import { useState, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import Navbar from './components/Navbar';
+import Navbar from './components/Navbar'; // Keep for now or remove if unused
+import Dock from './components/Dock';
 import AmbientLight from './components/AmbientLight';
 import SearchModal from './components/SearchModal';
 
@@ -18,9 +19,9 @@ function App() {
         <>
             <AmbientLight />
 
-            {/* Navbar with Search Trigger */}
+            {/* New Floating Dock Navigation */}
             {location.pathname !== '/search' && !location.pathname.includes('/watch') && (
-                <Navbar onOpenSearch={() => setIsSearchOpen(true)} />
+                <Dock onOpenSearch={() => setIsSearchOpen(true)} />
             )}
 
             {/* Global Search Modal */}

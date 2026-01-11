@@ -3,16 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --netflix-red: #E50914;
-  --bg-black: #141414;
+  --bg-color: #0a0a0a;
 }
 
 body {
-  @apply bg-[#141414] text-white antialiased font-sans;
+  @apply bg-focus-black text-white antialiased font-sans;
   overflow-x: hidden;
 }
 
-/* Custom scrollbar hiding */
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar Hide */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

@@ -4,30 +4,18 @@ import Hero from '../components/Hero';
 import MediaRow from '../components/MediaRow';
 
 const Home = () => {
-    const { data: trending, isLoading } = useQuery({
-        queryKey: ['trending'],
-        queryFn: api.getTrending
-    });
-
-    if (isLoading) return <div className="h-screen bg-black grid place-items-center">
-        <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
-    </div>;
-
-    const heroItem = trending?.results[0];
+    // Fetch Trending for Sidebar/Hero
+    const { data: trending } = useQuery({ queryKey: ['trending'], queryFn: api.getTrending });
+    const heroItem = trending?.results?.[0];
 
     return (
-        <div className="min-h-screen bg-black pb-20">
-            {/* Hero Section */}
-            <Hero item={heroItem} />
+        <div className="min-h-screen bg-[#0a0a0a] pb-32">
+            <SpotlightHero item={heroItem} />
 
-            {/* 
-              Content Rows 
-              Standard Netflix layout: Rows start overlapping the bottom fade of the billboard slightly.
-            */}
-            <div className="relative z-20 -mt-32 md:-mt-48 space-y-8 pl-4 md:pl-12 pb-20">
-                <MediaRow title="Trending Now" queryKey="trending" queryFn={api.getTrending} />
-                <MediaRow title="Top Rated" queryKey="topRated" queryFn={api.getTopRated} />
-                <MediaRow title="Action Movies" queryKey="action" queryFn={api.getActionMovies} />
+            <div className="space-y-0 relative z-10">
+                <MasonryGrid title="Trending Now" queryKey="trending" queryFn={api.getTrending} />
+                <MasonryGrid title="Top Rated" queryKey="topRated" queryFn={api.getTopRated} />
+                <MasonryGrid title="Action Collection" queryKey="action" queryFn={api.getActionMovies} />
             </div>
         </div>
     );

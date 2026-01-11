@@ -7,9 +7,12 @@ export default {
     theme: {
         extend: {
             colors: {
-                'netflix-red': '#E50914',
-                'netflix-black': '#141414',
-                'netflix-gray': '#e5e5e5',
+                'focus-black': '#0a0a0a',
+                'focus-gray': '#1c1c1e',
+                'focus-accent': '#ffffff',
+            },
+            fontFamily: {
+                sans: ['Inter', 'sans-serif'],
             }
         }
     },
