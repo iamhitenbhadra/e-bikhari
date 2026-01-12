@@ -7,9 +7,15 @@ import AmbientLight from './components/AmbientLight';
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home'));
 const Watch = lazy(() => import('./pages/Watch'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Catalog = lazy(() => import('./pages/Catalog'));
+const MyList = lazy(() => import('./pages/MyList'));
+
+import { useOnlineStatus } from './hooks/useOnlineStatus';
 
 function App() {
     const location = useLocation();
+    const isOnline = useOnlineStatus();
 
     // Fade out initial loader on mount
     useEffect(() => {
@@ -26,6 +32,13 @@ function App() {
     return (
         <>
             <AmbientLight />
+
+            {/* Offline Banner */}
+            {!isOnline && (
+                <div className="fixed top-0 left-0 right-0 z-[100] bg-[#E50914] text-white text-xs md:text-sm font-bold text-center py-2 px-4 shadow-lg animate-slideDown">
+                    You are currently offline. Check your internet connection.
+                </div>
+            )}
 
             {/* Dock Navigation */}
             {!location.pathname.includes('/watch') && (
@@ -45,7 +58,12 @@ function App() {
                     }>
                         <Routes location={location} key={location.pathname}>
                             <Route path="/" element={<Home />} />
+                            <Route path="/movies" element={<Catalog type="movies" />} />
+                            <Route path="/tv" element={<Catalog type="tv" />} />
+                            <Route path="/new" element={<Catalog type="new" />} />
+                            <Route path="/mylist" element={<MyList />} />
                             <Route path="/watch/:type/:id" element={<Watch />} />
+                            <Route path="*" element={<NotFound />} />
                         </Routes>
                     </Suspense>
                 </AnimatePresence>

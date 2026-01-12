@@ -17,6 +17,8 @@ const fetchTMDB = async (endpoint) => {
 
 export const api = {
     getTrending: (page = 1) => fetchTMDB(`/trending/all/day?page=${page}`),
+    getPopularMovies: (page = 1) => fetchTMDB(`/movie/popular?page=${page}`),
+    getPopularTV: (page = 1) => fetchTMDB(`/tv/popular?page=${page}`),
     getTopRated: (page = 1) => fetchTMDB(`/movie/top_rated?page=${page}`),
     getActionMovies: (page = 1) => fetchTMDB(`/discover/movie?with_genres=28&page=${page}`),
     getByGenre: (genreId, page = 1) => fetchTMDB(`/discover/movie?with_genres=${genreId}&page=${page}`),

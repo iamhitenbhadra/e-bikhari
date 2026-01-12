@@ -12,10 +12,10 @@ const Navbar = ({ onOpenSearch }) => {
 
     const links = [
         { name: 'Home', path: '/' },
-        { name: 'TV Shows', path: '/' },
-        { name: 'Movies', path: '/' },
-        { name: 'New & Popular', path: '/' },
-        { name: 'My List', path: '/' },
+        { name: 'Movies', path: '/movies' },
+        { name: 'TV Shows', path: '/tv' },
+        { name: 'New & Popular', path: '/new' },
+        { name: 'My List', path: '/mylist' },
     ];
 
     return (
