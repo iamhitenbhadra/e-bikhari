@@ -30,7 +30,7 @@ const Watch = () => {
     const bgY = useTransform(scrollY, [0, 500], [0, 150]);
     const opacity = useTransform(scrollY, [0, 400], [1, 0]);
 
-    if (isLoading) return <div className="h-screen w-full bg-[#0a0a0a] grid place-items-center text-white/20 animate-pulse">Loading Experience...</div>;
+    if (isLoading) return <div className="h-screen w-full bg-[#0a0a0a] grid place-items-center text-white/20 animate-pulse">Vexo</div>;
 
     const embedUrl = type === 'tv'
         ? `https://www.vidking.net/embed/tv/${id}/1/1`
