@@ -4,15 +4,24 @@ const AmbientLight = () => {
     const glowRef = useRef(null);
 
     useEffect(() => {
+        let requestId;
         const handleMouseMove = (e) => {
-            if (glowRef.current) {
-                glowRef.current.style.left = `${e.clientX}px`;
-                glowRef.current.style.top = `${e.clientY}px`;
-            }
+            if (requestId) return;
+
+            requestId = requestAnimationFrame(() => {
+                if (glowRef.current) {
+                    glowRef.current.style.left = `${e.clientX}px`;
+                    glowRef.current.style.top = `${e.clientY}px`;
+                }
+                requestId = null;
+            });
         };
 
         window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            if (requestId) cancelAnimationFrame(requestId);
+        };
     }, []);
 
     return (

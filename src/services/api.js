@@ -2,7 +2,8 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
 
 export const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
-export const BACKDROP_BASE = "https://image.tmdb.org/t/p/original";
+export const BACKDROP_BASE = "https://image.tmdb.org/t/p/w1280";
+export const BACKDROP_ORIGINAL = "https://image.tmdb.org/t/p/original";
 
 const fetchTMDB = async (endpoint) => {
     const res = await fetch(`${BASE_URL}${endpoint}`, {

@@ -6,6 +6,8 @@ import MasonryGrid from '../components/MasonryGrid';
 import NetworkError from '../components/NetworkError';
 import { useWatchlist } from '../hooks/useWatchlist';
 
+import LazyLoad from '../components/LazyLoad';
+
 const Home = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get('q');
@@ -85,9 +87,18 @@ const Home = () => {
                                 queryFn={() => Promise.resolve({ results: watchlist })}
                             />
                         )}
-                        <MasonryGrid title="Trending Now" queryKey="trending" queryFn={() => api.getTrending(1)} />
-                        <MasonryGrid title="Top Rated" queryKey="topRated" queryFn={() => api.getTopRated(1)} />
-                        <MasonryGrid title="Action Collection" queryKey="action" queryFn={() => api.getActionMovies(1)} />
+
+                        <LazyLoad>
+                            <MasonryGrid title="Trending Now" queryKey="trending" queryFn={() => api.getTrending(1)} />
+                        </LazyLoad>
+
+                        <LazyLoad>
+                            <MasonryGrid title="Top Rated" queryKey="topRated" queryFn={() => api.getTopRated(1)} />
+                        </LazyLoad>
+
+                        <LazyLoad>
+                            <MasonryGrid title="Action Collection" queryKey="action" queryFn={() => api.getActionMovies(1)} />
+                        </LazyLoad>
                     </div>
                 </>
             ) : genreId ? (

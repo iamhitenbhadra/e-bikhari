@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { IMAGE_BASE, BACKDROP_BASE } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -42,4 +43,4 @@ const MediaCard = ({ item }) => {
     );
 };
 
-export default MediaCard;
+export default React.memo(MediaCard);
